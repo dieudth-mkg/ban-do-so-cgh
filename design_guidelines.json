@@ -1,0 +1,115 @@
+{
+  "project_name": "MekongGreen - Bản đồ số Cơ giới hóa Nông nghiệp Vùng ĐBSCL",
+  "persona": "E1 - The Anti-AI Designer",
+  "theme_strategy": {
+    "mode": "light",
+    "rationale": "Enterprise Government Dashboard. Requires high data clarity, focus on map integration, and clean data presentation. Dark themes can muddy map visibility if not carefully controlled, so a clean light theme (#F8FAFC background) with strong blue and green accents creates trust and authority."
+  },
+  "typography": {
+    "rationale": "Authority, Technical Precision, and Vietnamese Legibility.",
+    "headings": {
+      "font": "Cabinet Grotesk, sans-serif",
+      "instruction": "Do not use Inter. Cabinet Grotesk gives a slightly structured, authoritative look perfect for a government tech dashboard. Use tracking-tight (-0.02em)."
+    },
+    "body": {
+      "font": "IBM Plex Sans, sans-serif",
+      "instruction": "Highly legible for dense data tables and map popups."
+    }
+  },
+  "colors": {
+    "primary": "#00A82D",
+    "primary_instruction": "Xanh lá công nghệ nông nghiệp. Use for primary buttons, active successful states, and 'Đủ' status.",
+    "secondary": "#00A3E0",
+    "secondary_instruction": "Xanh lam Mekong. Use for Header, SideNav backgrounds, and active tab states.",
+    "accent": "#00C4B4",
+    "accent_instruction": "Xanh ngọc. Focus rings, highlights, and special badges.",
+    "background": "#F8FAFC",
+    "surface": "#FFFFFF",
+    "text_main": "#0F172A",
+    "text_muted": "#64748B",
+    "status": {
+      "sufficient": "#00A82D",
+      "slight_shortage": "#F5A623",
+      "severe_shortage": "#E74C3C",
+      "no_data": "#95A5A6"
+    },
+    "forbidden_colors": [
+      "#7351B7",
+      "#1B93A4"
+    ]
+  },
+  "layouts": {
+    "login_page": {
+      "structure": "Split 50/50 layout (h-screen, w-full). Left side: full cover image of rice field/harvester with a blue overlay (bg-[#00A3E0]/40). Right side: Login form container centered, bg-[#F8FAFC].",
+      "details": "Left side MUST have an overlay so it doesn't look raw. Right side has Logo and Login form (No signup)."
+    },
+    "dashboard_shell": {
+      "structure": "Fixed Left SideNav + Main Content Area (calc(100vw - sidebar_width)).",
+      "sidenav": "Deep dark background (e.g., #0B1120 or #00A3E0 directly if preferred, let's use deep dark #0B1120 with #00A3E0 active item background and #00A82D left border highlight). Fixed width 260px.",
+      "header": "Glassmorphism header (backdrop-blur-xl, bg-white/70, border-b border-slate-200) for breadcrumbs and user profile.",
+      "content": "p-6 or p-8, bg-[#F8FAFC] min-h-screen."
+    },
+    "map_page": {
+      "structure": "Full height map area. Leaflet map takes 100% height minus header. Absolute positioned Glassmorphism Side Panel Filter (backdrop-blur-xl, bg-white/80, shadow-lg, rounded-xl, left 24px, top 24px). Absolute positioned Machine Status Table on the bottom or right."
+    }
+  },
+  "component_instructions": {
+    "buttons": "Pill-shaped or slightly rounded (rounded-md) with sharp inner text. Hover state must darken background. Never rely on just color.",
+    "cards": "Neumorphic / Flat Solid strategy. bg-white, 1px border-slate-200, shadow-sm. Use sharp corners (rounded-lg maximum).",
+    "map_markers": "Tech pin markers using Lucide React icons (e.g., Tractor, Leaf). Markers MUST change color based on the status (Sufficient, Short, Severe, No Data).",
+    "tables": "Dense rows, left-aligned data, border-b on rows, no vertical borders. Use sticky header.",
+    "charts": "Recharts. Use the MekongGreen theme colors for bars/lines. Remove default Recharts grid lines or make them very faint (stroke-slate-100).",
+    "glassmorphism": "Used for map overlay panels. backdrop-blur-xl, bg-white/70, border border-white/40."
+  },
+  "pages_and_features": [
+    {
+      "name": "Login",
+      "features": "Split 50/50 layout. Left image with blue overlay. Right form with logo and login (no signup)."
+    },
+    {
+      "name": "Bản đồ số",
+      "features": "Leaflet.js OSM, 6 Mekong provinces. Map markers (Tractor/Sprout) colored by status. Glassmorphism filter panel. Machine status overview table overlay."
+    },
+    {
+      "name": "Dashboard Tổng quan",
+      "features": "4 KPI Cards (Total Machines, Co-ops, Ha Covered, etc.). Recharts for machine types, province distribution, density. Priority list."
+    },
+    {
+      "name": "Cân đối Cung-Cầu & Cảnh báo",
+      "features": "Comparison table by crop stages (Làm đất, Gieo sạ, etc.). Badges for Thiếu/Đủ/Thừa. Emergency warning strip at the top."
+    },
+    {
+      "name": "Quản lý HTX & Máy móc",
+      "features": "Admin CRUD tables with 2 tabs. Actions column. Upload Excel button."
+    },
+    {
+      "name": "Báo cáo & Kết xuất",
+      "features": "Filter bar. 3 Report cards. Export to Excel/PDF buttons."
+    },
+    {
+      "name": "Quản trị Hệ thống",
+      "features": "Tabs for Accounts, Categories, Quotas, Parameters, API logs."
+    }
+  ],
+  "visual_enhancers": {
+    "motion": "Use framer-motion for page transitions (fade in) and staggered list animations in tables. Add micro-interactions to filter pills and navigation items.",
+    "shadows": "Ambient + direct shadows for floating map elements. Flat/no shadow for dashboard grid cards, just 1px borders."
+  },
+  "image_urls": {
+    "login_left_cover": {
+      "url": "https://images.unsplash.com/photo-1764323064945-d064c30742b8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNTl8MHwxfHNlYXJjaHwxfHxjb21iaW5lJTIwaGFydmVzdGVyJTIwcmljZSUyMGZpZWxkfGVufDB8fHx8MTc4NTI5NzY5MXww&ixlib=rb-4.1.0&q=85",
+      "description": "Combine harvester working in a golden rice field. Used on the left side of the 50/50 split login screen. REQUIRES a blue (#00A3E0) overlay at 40% opacity."
+    }
+  },
+  "universal_guidelines_for_main_agent": [
+    "Do not center align text globally.",
+    "Use Lucide React for icons.",
+    "All interactive elements MUST have a data-testid attribute.",
+    "Do not use transparent background where content scrolls under it; use glassmorphism.",
+    "Build the dashboard layout with a strict grid system (col-span strategies).",
+    "Map must use 'react-leaflet' and Leaflet CSS.",
+    "Ensure high contrast for text (APCA/WCAG standards).",
+    "Use Tailwind arbitrary values carefully, prefer standard spacing scale."
+  ],
+  "technical_stack_notes": "React, Tailwind CSS, Shadcn UI primitives, Recharts, React-Leaflet."
+}
