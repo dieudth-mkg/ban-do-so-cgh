@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from openpyxl import load_workbook, Workbook
 import httpx
 import random
+import uuid
 
 from models import (
     UserCreate, LoginRequest, ChangePasswordRequest,
@@ -958,7 +959,7 @@ async def trigger_sync(user=Depends(require_admin)):
     finished_at = datetime.now(timezone.utc)
     latency_ms = int((finished_at - started_at).total_seconds() * 1000)
     entry = {
-        "id": f"sync-{int(started_at.timestamp())}",
+        "id": f"sync-{uuid.uuid4().hex[:12]}",
         "source": "HTX_APP",
         "source_url": sync_url,
         "status": status,
