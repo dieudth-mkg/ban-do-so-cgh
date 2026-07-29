@@ -732,10 +732,19 @@ def _make_stream(data: bytes, filename: str, content_type: str):
 
 
 @api.get("/reports/summary-by-region")
-async def report_summary_by_region(user=Depends(get_current_user)):
+async def report_summary_by_region(
+    province: Optional[str] = None,
+    category: Optional[str] = None,
+    user=Depends(get_current_user),
+):
     provinces = await db.provinces.find({}, {"_id": 0}).to_list(50)
-    htx_docs = await db.htx.find({}, {"_id": 0}).to_list(2000)
-    machines = await db.machines.find({}, {"_id": 0}).to_list(20000)
+    if province and province != "ALL":
+        provinces = [p for p in provinces if p["code"] == province]
+    htx_docs = await db.htx.find({"active": True}, {"_id": 0}).to_list(2000)
+    m_query = {}
+    if category and category != "ALL":
+        m_query["category_code"] = category
+    machines = await db.machines.find(m_query, {"_id": 0}).to_list(20000)
     rows = []
     for p in provinces:
         p_htx = [h for h in htx_docs if h["province_code"] == p["code"]]
@@ -753,16 +762,14 @@ async def report_summary_by_region(user=Depends(get_current_user)):
     return rows
 
 
-@api.get("/reports/export")
-async def export_report(
-    kind: str = Query(..., pattern="^(summary_by_region|supply_demand|htx_shortage)$"),
-    fmt: str = Query(..., pattern="^(xlsx|pdf)$"),
-    season: Optional[str] = Query("DX"),
-    province: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
-    user=Depends(get_current_user),
-):
-    # Build filter suffix
+async def _build_report(
+    kind: str,
+    season: Optional[str],
+    province: Optional[str],
+    category: Optional[str],
+    user: dict,
+) -> dict:
+    """Shared builder that returns {title, headers, rows, filter_suffix}."""
     season_names = {s["code"]: s["name"] for s in SEASONS}
     prov_names = {p["code"]: p["name"] for p in PROVINCES}
     cat_names = {c["code"]: c["name"] for c in MACHINE_CATEGORIES}
@@ -776,29 +783,7 @@ async def export_report(
     filter_suffix = " · ".join(filter_parts) if filter_parts else "Toàn bộ dữ liệu"
 
     if kind == "summary_by_region":
-        # summary by region: optionally filter by province & category
-        provinces_docs = await db.provinces.find({}, {"_id": 0}).to_list(50)
-        if province and province != "ALL":
-            provinces_docs = [p for p in provinces_docs if p["code"] == province]
-        htx_docs = await db.htx.find({}, {"_id": 0}).to_list(2000)
-        m_query = {}
-        if category and category != "ALL":
-            m_query["category_code"] = category
-        machines = await db.machines.find(m_query, {"_id": 0}).to_list(20000)
-        rows_data = []
-        for p in provinces_docs:
-            p_htx = [h for h in htx_docs if h["province_code"] == p["code"]]
-            htx_ids = [h["id"] for h in p_htx]
-            p_machines = [m for m in machines if m["htx_id"] in htx_ids]
-            active = [m for m in p_machines if m["status"] == "hoat_dong"]
-            area = sum(h["cultivated_area_ha"] for h in p_htx)
-            rows_data.append({
-                "province": p["name"],
-                "htx_count": len(p_htx),
-                "machine_count": len(p_machines),
-                "active_count": len(active),
-                "area_ha": round(area, 1),
-            })
+        rows_data = await report_summary_by_region(province=province, category=category, user=user)
         headers = ["Tỉnh", "Số HTX", "Tổng số máy", "Máy hoạt động", "Diện tích (ha)"]
         rows = [[r["province"], r["htx_count"], r["machine_count"], r["active_count"], r["area_ha"]] for r in rows_data]
         title = f"Báo cáo Tổng hợp theo Khu vực — {filter_suffix}"
@@ -807,8 +792,8 @@ async def export_report(
         rows_all = sd["rows"]
         if category and category != "ALL":
             rows_all = [r for r in rows_all if r["category_code"] == category]
-        headers = ["Tỉnh", "Khâu", "Chủng loại máy", "Diện tích (ha)", "Nhu cầu", "Sẵn có", "Chênh lệch", "Trạng thái"]
         stage_names = {s["code"]: s["name"] for s in STAGES}
+        headers = ["Tỉnh", "Khâu", "Chủng loại máy", "Diện tích (ha)", "Nhu cầu", "Sẵn có", "Chênh lệch", "Trạng thái"]
         rows = [[
             r["province_name"], stage_names.get(r["stage"], r["stage"]),
             r["category_name"], r["cultivated_area_ha"], r["needed"],
@@ -825,13 +810,43 @@ async def export_report(
             f"{(h['coverage_ratio'] or 0) * 100:.1f}%", h["status_label"],
         ] for h in shortages]
         title = f"Báo cáo HTX Thừa/Thiếu Máy móc — {filter_suffix}"
+    return {"title": title, "headers": headers, "rows": rows, "filter_suffix": filter_suffix}
 
+
+@api.get("/reports/preview")
+async def report_preview(
+    kind: str = Query(..., pattern="^(summary_by_region|supply_demand|htx_shortage)$"),
+    season: Optional[str] = Query("DX"),
+    province: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    user=Depends(get_current_user),
+):
+    """Return JSON preview of the report that would be exported."""
+    data = await _build_report(kind, season, province, category, user)
+    return {**data, "total_rows": len(data["rows"])}
+
+
+@api.get("/reports/export")
+async def export_report(
+    kind: str = Query(..., pattern="^(summary_by_region|supply_demand|htx_shortage)$"),
+    fmt: str = Query(..., pattern="^(xlsx|pdf)$"),
+    season: Optional[str] = Query("DX"),
+    province: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
+    user=Depends(get_current_user),
+):
+    data = await _build_report(kind, season, province, category, user)
+    filename_parts = [kind]
+    for x in (season, province, category):
+        if x and x != "ALL":
+            filename_parts.append(x)
+    fname_base = "-".join(filename_parts)
     if fmt == "xlsx":
-        data = build_excel(title, headers, rows)
-        return _make_stream(data, f"{kind}.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        blob = build_excel(data["title"], data["headers"], data["rows"])
+        return _make_stream(blob, f"{fname_base}.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     else:
-        data = build_pdf(title, headers, rows)
-        return _make_stream(data, f"{kind}.pdf", "application/pdf")
+        blob = build_pdf(data["title"], data["headers"], data["rows"])
+        return _make_stream(blob, f"{fname_base}.pdf", "application/pdf")
 
 
 # ============ ADMIN: USERS ============

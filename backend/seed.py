@@ -167,20 +167,27 @@ async def seed_all(db):
             {"$set": {"commune": commune}},
         )
 
-    # Machines - generate random count per HTX per category
+    # Machines - versioned re-seed. v3 introduces mixed distribution so the
+    # map demo shows a natural mix of green/amber/red status per province.
     machines_col = db["machines"]
-    existing_count = await machines_col.count_documents({})
-    if existing_count == 0:
-        random.seed(42)
+    settings_col = db["system_settings"]
+    seed_ver_doc = await settings_col.find_one({"key": "seed_version"})
+    current_ver = (seed_ver_doc or {}).get("value", "")
+    if current_ver != "v3":
+        await machines_col.delete_many({})
+        random.seed(1337)
         machines = []
-        for code, name, owner, prov, lat, lng, area, commune in HTX_SAMPLES:
+        # Per province group (4 consecutive HTX): idx 0 → surplus/green,
+        # idx 1 → sufficient/green, idx 2 → slight shortage/amber, idx 3 → severe/red
+        target_factors = [1.30, 1.10, 0.82, 0.55]
+        for htx_idx, (code, name, owner, prov, lat, lng, area, commune) in enumerate(HTX_SAMPLES):
+            group_idx = htx_idx % 4
+            base_factor = target_factors[group_idx]
             for cat in MACHINE_CATEGORIES:
-                # Random supply: sometimes short, sometimes sufficient
-                # Base need
                 norm = next(n["ha_per_machine_per_season"] for n in NORMS if n["category_code"] == cat["code"])
                 needed = area / norm
-                # Randomly assign 40%-130% of needed
-                factor = random.uniform(0.4, 1.3)
+                # Small per-category jitter so not every category is identical
+                factor = base_factor * random.uniform(0.92, 1.08)
                 count = max(0, int(round(needed * factor)))
                 for i in range(count):
                     machines.append({
@@ -199,7 +206,12 @@ async def seed_all(db):
                     })
         if machines:
             await machines_col.insert_many(machines)
-        logs.append(f"machines:{len(machines)}")
+        await settings_col.update_one(
+            {"key": "seed_version"},
+            {"$set": {"key": "seed_version", "value": "v3"}},
+            upsert=True,
+        )
+        logs.append(f"machines_v3:{len(machines)}")
 
     # Sync logs (mock)
     sync_col = db["sync_logs"]
