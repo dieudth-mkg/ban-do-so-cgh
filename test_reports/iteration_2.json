@@ -1,0 +1,26 @@
+{
+  "summary": "Phase 2 E2E testing PASSED. Backend: 15/15 phase 2 pytest tests PASSED (GET /geojson/provinces returns FeatureCollection with 6 provinces + Polygon geometry; GET /map/heatmap returns {points, max_density} with lat/lng/hp_per_ha/htx_code; GET /htx/import-template as admin returns valid xlsx (PK magic + openxml content-type), staff gets 403; POST /htx/import-excel dry_run validates rows (2 ok / 1 error / 1 skipped works), invalid province_code, missing name+owner_name, non-numeric lat/lng, and existing CT-HTX01 skipped are all correctly reported; dry_run=false actually inserts 2 new HTX into DB and cleanup deactivates them; non-xlsx returns 400; staff import gets 403; supply-demand?season=DX/HT/TD returns different 'needed' values (DX > HT > TD) and severe count TD<=DX; map/htx-summary season DX vs TD produces different coverage_ratio). Frontend Playwright: admin login -> /map; season pills DX/HT/TD visible on MapPage with active-state switching; 'Ranh giới 6 tỉnh' toggle removes/restores 6 polygon paths on Leaflet SVG (6 -> 0 -> 6); 'Mật độ HP / ha' toggle correctly hides bottom status table (heatmap layer active); DataManagement Excel modal opens with dropzone + template download button; file upload + Kiểm tra dữ liệu returns modal with 3 stats (1 Hợp lệ / 1 Lỗi / 1 Đã tồn tại) plus row-level error details ('Thiếu name · Thiếu owner_name · province_code không hợp lệ · lat/lng phải là số · cultivated_area_ha phải > 0') and 'Xác nhận nhập 1 HTX' confirm button appears; Supply-Demand page season pills switch (DX 'Thiếu 22 Cần 43 Có 21' -> TD 'Thiếu 5 Cần 25.8 Có 21' for CT/CHAM_SOC, correctly showing SEASON_FACTOR 1.0 vs 0.6).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_phase2.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/phase2_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py has grown to ~900 lines with Excel import + heatmap + geojson endpoints; strongly recommend splitting into routers (auth, htx, machines, dashboard, reports, admin, import) now that phase 2 shipped.",
+    "PROVINCE_GEOJSON polygons are hand-approximated and stored in-code; document this in the response/UI (a note like 'approximate boundaries') to avoid users treating them as official mapping - currently not surfaced.",
+    "/api/htx/import-excel loops per-row with individual insert_one; for a 1200-row import this is 1200 sequential awaits. Consider insert_many(ok_docs) in a single call for large batches.",
+    "SEASON_FACTOR applied to demand but not shown in tooltip/label of Supply-Demand and Map; users may wonder why DX vs TD numbers differ - consider surfacing the factor.",
+    "Import template downloads example rows with codes CT-HTX99 / AG-HTX99 that may already exist after tests; template should use obviously-fake sample codes (e.g., SAMPLE-01) to avoid confusion.",
+    "Heatmap endpoint computes on-the-fly for all HTX+machines each call; fine at current volume (24 HTX, ~1346 machines) but consider caching with TTL as data grows."
+  ],
+  "updated_files": ["/app/backend/tests/test_phase2.py"],
+  "success_rate": {"backend": "100% (15/15 phase2 + 31/31 phase1)", "frontend": "100% (all 4 new features verified)"},
+  "test_credentials": "admin@mekonggreen.vn/admin123, canbo@dcrd.gov.vn/canbo123 - both work",
+  "seed_data_creation": "Tests created TEST-P2-INS1, TEST-P2-INS2 (deactivated after insert test), TEST-UI-01 (from frontend dry-run only, NOT persisted since final confirm was skipped). Test file at /tmp/ui_import.xlsx for frontend flow.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Phase 2 verification complete. New endpoints: /api/geojson/provinces (public), /api/map/heatmap (auth), /api/htx/import-template (admin), /api/htx/import-excel (admin, multipart file, dry_run query). Season query param 'season' accepted on /supply-demand and /map/htx-summary with SEASON_FACTOR DX=1.0 HT=0.9 TD=0.6. Frontend testids: season-{DX|HT|TD}, sd-season-{DX|HT|TD}, sd-cell-{pcode}-{stage} where stage in {LAM_DAT,GIEO_SA,CHAM_SOC,THU_HOACH,SAU_TH}; toggle-boundaries, toggle-heatmap; import-excel-modal, dropzone, file-input, download-template-btn, import-validate, import-confirm, import-cancel, import-result. Phase 1 backend_test.py still passes."
+}

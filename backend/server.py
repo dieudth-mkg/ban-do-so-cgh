@@ -1,5 +1,5 @@
 """MekongGreen - FastAPI backend."""
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional, List
 from io import BytesIO
 from datetime import datetime, timezone
+from openpyxl import load_workbook, Workbook
 
 from models import (
     UserCreate, LoginRequest, ChangePasswordRequest,
@@ -23,6 +24,11 @@ from auth import (
 )
 from seed import seed_all, PROVINCES, STAGES, SEASONS, MACHINE_CATEGORIES, NORMS
 from exports import build_excel, build_pdf
+from geojson_data import PROVINCE_GEOJSON
+
+
+# Season demand factor - applied to cultivated_area_ha when computing needed machines
+SEASON_FACTOR = {"DX": 1.0, "HT": 0.9, "TD": 0.6, "ALL": 1.0}
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -204,6 +210,187 @@ async def deactivate_htx(code: str, user=Depends(require_admin)):
     return {"ok": True}
 
 
+# ============ HTX EXCEL IMPORT ============
+HTX_IMPORT_COLUMNS = [
+    "code", "name", "owner_name", "province_code",
+    "district", "commune", "lat", "lng", "cultivated_area_ha", "phone",
+]
+
+
+@api.get("/htx/import-template")
+async def htx_import_template(user=Depends(require_admin)):
+    """Download an Excel template for HTX bulk import."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "HTX_Template"
+    ws.append(HTX_IMPORT_COLUMNS)
+    # example rows
+    ws.append(["CT-HTX99", "HTX Mẫu", "Nguyễn Văn A", "CT", "Ô Môn", "Thới An", 10.10, 105.60, 850, "0901234567"])
+    ws.append(["AG-HTX99", "HTX Mẫu An Giang", "Trần Thị B", "AG", "Châu Đốc", "Vĩnh Mỹ", 10.70, 105.10, 1200, "0912345678"])
+    for i, col in enumerate(ws.columns, 1):
+        max_len = max(len(str(c.value or "")) for c in col)
+        ws.column_dimensions[col[0].column_letter].width = max(14, max_len + 2)
+    bio = BytesIO(); wb.save(bio)
+    return StreamingResponse(
+        BytesIO(bio.getvalue()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="htx-import-template.xlsx"'},
+    )
+
+
+@api.post("/htx/import-excel")
+async def import_htx_excel(
+    file: UploadFile = File(...),
+    dry_run: bool = Query(False),
+    user=Depends(require_admin),
+):
+    """Bulk import HTX from an .xlsx file. Returns row-level validation report."""
+    if not file.filename or not file.filename.lower().endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="Chỉ chấp nhận tệp .xlsx")
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Tệp vượt quá 10MB")
+    try:
+        wb = load_workbook(BytesIO(content), data_only=True)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Không đọc được tệp Excel: {e}")
+    ws = wb.active
+
+    rows = list(ws.iter_rows(values_only=True))
+    if len(rows) < 2:
+        raise HTTPException(status_code=400, detail="Tệp trống hoặc chỉ có tiêu đề")
+    header = [str(c).strip() if c is not None else "" for c in rows[0]]
+
+    # map column index
+    col_idx = {name: (header.index(name) if name in header else -1) for name in HTX_IMPORT_COLUMNS}
+    missing = [k for k, v in col_idx.items() if v == -1 and k in ("code", "name", "owner_name", "province_code", "lat", "lng", "cultivated_area_ha")]
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Thiếu cột bắt buộc: {', '.join(missing)}")
+
+    prov_codes = {p["code"] for p in PROVINCES}
+    ok_rows, error_rows, skipped_rows = [], [], []
+
+    for r_i, r in enumerate(rows[1:], start=2):
+        if all(c is None or str(c).strip() == "" for c in r):
+            continue
+        record = {}
+        errors = []
+        for k, idx in col_idx.items():
+            record[k] = r[idx] if idx >= 0 and idx < len(r) else None
+
+        # required
+        for f in ("code", "name", "owner_name", "province_code", "lat", "lng", "cultivated_area_ha"):
+            if record.get(f) in (None, ""):
+                errors.append(f"Thiếu {f}")
+        # province valid
+        if record.get("province_code") and str(record["province_code"]).strip() not in prov_codes:
+            errors.append(f"province_code không hợp lệ (chấp nhận: {', '.join(sorted(prov_codes))})")
+        # numeric
+        try:
+            lat = float(record["lat"]); lng = float(record["lng"])
+            if not (8.0 <= lat <= 24.0) or not (102.0 <= lng <= 110.0):
+                errors.append("lat/lng ngoài phạm vi Việt Nam")
+            record["lat"], record["lng"] = lat, lng
+        except (TypeError, ValueError):
+            errors.append("lat/lng phải là số")
+        try:
+            area = float(record["cultivated_area_ha"])
+            if area <= 0:
+                errors.append("cultivated_area_ha phải > 0")
+            record["cultivated_area_ha"] = area
+        except (TypeError, ValueError):
+            errors.append("cultivated_area_ha phải là số")
+
+        code = str(record.get("code") or "").strip()
+        if not errors and code:
+            existing = await db.htx.find_one({"code": code})
+            if existing:
+                skipped_rows.append({"row": r_i, "code": code, "reason": "Đã tồn tại"})
+                continue
+
+        if errors:
+            error_rows.append({"row": r_i, "code": code, "errors": errors})
+        else:
+            record["code"] = code
+            record["name"] = str(record["name"]).strip()
+            record["owner_name"] = str(record["owner_name"]).strip()
+            record["province_code"] = str(record["province_code"]).strip()
+            record["district"] = str(record.get("district") or "").strip()
+            record["commune"] = str(record.get("commune") or "").strip()
+            record["phone"] = str(record.get("phone") or "").strip()
+            ok_rows.append({"row": r_i, **record})
+
+    inserted = 0
+    if not dry_run and ok_rows:
+        for rec in ok_rows:
+            doc = {
+                "id": rec["code"],
+                "code": rec["code"],
+                "name": rec["name"],
+                "owner_name": rec["owner_name"],
+                "owner_type": "HTX",
+                "province_code": rec["province_code"],
+                "district": rec["district"],
+                "commune": rec["commune"],
+                "lat": rec["lat"],
+                "lng": rec["lng"],
+                "cultivated_area_ha": rec["cultivated_area_ha"],
+                "phone": rec["phone"],
+                "active": True,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await db.htx.insert_one(doc)
+            inserted += 1
+        await db.system_logs.insert_one({
+            "id": f"log-{datetime.now(timezone.utc).timestamp()}",
+            "actor_email": user["email"],
+            "action": "IMPORT_HTX_EXCEL",
+            "detail": f"file={file.filename}, inserted={inserted}, errors={len(error_rows)}, skipped={len(skipped_rows)}",
+            "ts": datetime.now(timezone.utc).isoformat(),
+        })
+
+    return {
+        "filename": file.filename,
+        "total_rows": len(rows) - 1,
+        "ok_count": len(ok_rows),
+        "error_count": len(error_rows),
+        "skipped_count": len(skipped_rows),
+        "inserted": inserted,
+        "dry_run": dry_run,
+        "errors": error_rows[:200],
+        "skipped": skipped_rows[:200],
+        "ok_preview": ok_rows[:20],
+    }
+
+
+# ============ GEOJSON PROVINCES ============
+@api.get("/geojson/provinces")
+async def geojson_provinces():
+    """Return simplified GeoJSON polygons for the 6 provinces."""
+    return PROVINCE_GEOJSON
+
+
+# ============ HEATMAP HP/ha ============
+@api.get("/map/heatmap")
+async def map_heatmap(user=Depends(get_current_user)):
+    """Return heat points [lat, lng, intensity] where intensity = HP density (HP/ha)."""
+    htx_docs = await db.htx.find({"active": True}, {"_id": 0}).to_list(2000)
+    machines = await db.machines.find({}, {"_id": 0}).to_list(20000)
+    hp_by_htx: dict = {}
+    for m in machines:
+        hp_by_htx[m["htx_id"]] = hp_by_htx.get(m["htx_id"], 0) + m.get("horsepower", 0)
+    points = []
+    max_density = 0.0
+    for h in htx_docs:
+        area = h.get("cultivated_area_ha", 0)
+        if not area:
+            continue
+        density = hp_by_htx.get(h["id"], 0) / area  # HP per ha
+        max_density = max(max_density, density)
+        points.append({"lat": h["lat"], "lng": h["lng"], "hp_per_ha": round(density, 3), "htx_code": h["code"]})
+    return {"points": points, "max_density": round(max_density, 3)}
+
+
 # ============ MACHINES ============
 @api.get("/machines")
 async def list_machines(
@@ -267,6 +454,7 @@ async def map_htx_summary(
     province: Optional[str] = None,
     category: Optional[str] = None,
     status: Optional[str] = None,
+    season: Optional[str] = None,
     user=Depends(get_current_user),
 ):
     """Return list of HTX with computed status color for map markers."""
@@ -278,6 +466,7 @@ async def map_htx_summary(
     norms_docs = await db.productivity_norms.find({}, {"_id": 0}).to_list(50)
     norms = {n["category_code"]: n["ha_per_machine_per_season"] for n in norms_docs}
     thr = await db.alert_thresholds.find_one({"key": "default"}) or {"sufficient_min": 0.95, "slight_min": 0.70}
+    factor = SEASON_FACTOR.get(season or "DX", 1.0)
 
     m_query = {}
     if category and category != "ALL":
@@ -297,11 +486,12 @@ async def map_htx_summary(
         # Compute weakest ratio across categories (or filtered category)
         cats = [category] if category and category != "ALL" else [c["code"] for c in MACHINE_CATEGORIES]
         min_ratio = None
+        effective_area = h.get("cultivated_area_ha", 0) * factor
         for c in cats:
             norm = norms.get(c, 0)
-            if not norm or not h.get("cultivated_area_ha"):
+            if not norm or not effective_area:
                 continue
-            needed = h["cultivated_area_ha"] / norm
+            needed = effective_area / norm
             have = len([x for x in active if x["category_code"] == c])
             ratio = have / needed if needed > 0 else 1.0
             if min_ratio is None or ratio < min_ratio:
@@ -471,9 +661,10 @@ async def priority_list(user=Depends(get_current_user)):
 @api.get("/supply-demand")
 async def supply_demand(
     province: Optional[str] = None,
-    season: Optional[str] = None,
+    season: Optional[str] = "DX",
     user=Depends(get_current_user),
 ):
+    factor = SEASON_FACTOR.get(season or "DX", 1.0)
     htx_q = {"active": True}
     if province and province != "ALL":
         htx_q["province_code"] = province
@@ -494,7 +685,7 @@ async def supply_demand(
         norm = norms.get(cat["code"], 0)
         for pcode in provinces:
             p_htx = [h for h in htx_docs if h["province_code"] == pcode]
-            area = sum(h["cultivated_area_ha"] for h in p_htx)
+            area = sum(h["cultivated_area_ha"] for h in p_htx) * factor
             needed = area / norm if norm else 0
             have = len([m for m in all_machines if m["category_code"] == cat["code"] and any(h["id"] == m["htx_id"] for h in p_htx)])
             diff = have - needed

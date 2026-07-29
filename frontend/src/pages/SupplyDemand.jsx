@@ -22,22 +22,28 @@ export default function SupplyDemand() {
   const [rows, setRows] = useState([]);
   const [critical, setCritical] = useState([]);
   const [province, setProvince] = useState("ALL");
+  const [season, setSeason] = useState("DX");
   const [provinces, setProvinces] = useState([]);
+  const [seasons, setSeasons] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/provinces").then((r) => setProvinces(r.data));
+    Promise.all([api.get("/provinces"), api.get("/seasons")]).then(([p, s]) => {
+      setProvinces(p.data);
+      setSeasons(s.data);
+    });
   }, []);
 
   useEffect(() => {
     setLoading(true);
-    const params = province !== "ALL" ? { province } : {};
+    const params = { season };
+    if (province !== "ALL") params.province = province;
     api.get("/supply-demand", { params }).then((r) => {
       setRows(r.data.rows);
       setCritical(r.data.critical);
       setLoading(false);
     });
-  }, [province]);
+  }, [province, season]);
 
   const grouped = useMemo(() => {
     const map = {};
@@ -59,17 +65,33 @@ export default function SupplyDemand() {
             So sánh nhu cầu máy thực tế với số lượng sẵn có theo từng khâu sản xuất
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-500" />
-          <select
-            data-testid="filter-sd-province"
-            value={province}
-            onChange={(e) => setProvince(e.target.value)}
-            className="text-sm bg-white border border-slate-300 rounded-md px-3 py-2"
-          >
-            <option value="ALL">Toàn vùng</option>
-            {provinces.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
-          </select>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1" data-testid="sd-season-switcher">
+            {seasons.map((s) => (
+              <button
+                key={s.code}
+                data-testid={`sd-season-${s.code}`}
+                onClick={() => setSeason(s.code)}
+                className={`text-xs font-medium px-3 py-1.5 rounded-md transition-colors ${
+                  season === s.code ? "bg-[#00A82D] text-white" : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-slate-500" />
+            <select
+              data-testid="filter-sd-province"
+              value={province}
+              onChange={(e) => setProvince(e.target.value)}
+              className="text-sm bg-white border border-slate-300 rounded-md px-3 py-2"
+            >
+              <option value="ALL">Toàn vùng</option>
+              {provinces.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
+            </select>
+          </div>
         </div>
       </div>
 

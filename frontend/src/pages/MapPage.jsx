@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
+import "leaflet.heat";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Tractor, Sprout, Filter, MapPin, Calendar, Activity, Phone, Layers } from "lucide-react";
+import {
+  Tractor, Sprout, Filter, MapPin, Calendar, Activity, Phone, Layers,
+  Flame, Waypoints,
+} from "lucide-react";
 import { api } from "../lib/api";
 
 const STATUS_COLORS = {
@@ -12,13 +16,15 @@ const STATUS_COLORS = {
   gray: "#95A5A6",
 };
 
+const PROVINCE_COLORS = {
+  CT: "#00A3E0", AG: "#00A82D", VL: "#00C4B4",
+  DT: "#7C3AED", TN: "#F5A623", CM: "#E74C3C",
+};
+
 function makePinIcon(color) {
   const svg = renderToStaticMarkup(
     <svg viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26C32 7.163 24.837 0 16 0z"
-        fill={color}
-      />
+      <path d="M16 0C7.163 0 0 7.163 0 16c0 11.5 16 26 16 26s16-14.5 16-26C32 7.163 24.837 0 16 0z" fill={color} />
       <circle cx="16" cy="15" r="9" fill="white" />
       <g transform="translate(9,8)" stroke={color} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round">
         <path d="M7 9V6.5A2.5 2.5 0 0 0 4.5 4H3" />
@@ -32,9 +38,7 @@ function makePinIcon(color) {
   return L.divIcon({
     className: "mkg-marker-pin",
     html: svg,
-    iconSize: [32, 42],
-    iconAnchor: [16, 42],
-    popupAnchor: [0, -38],
+    iconSize: [32, 42], iconAnchor: [16, 42], popupAnchor: [0, -38],
   });
 }
 
@@ -48,31 +52,57 @@ function MapAutoFit({ points }) {
   return null;
 }
 
+function HeatLayer({ points, max }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!points?.length) return;
+    const data = points.map((p) => [p.lat, p.lng, p.hp_per_ha]);
+    const layer = L.heatLayer(data, {
+      radius: 45, blur: 30, maxZoom: 10,
+      max: max || 1,
+      gradient: {
+        0.0: "#00A82D", 0.35: "#00C4B4", 0.55: "#00A3E0",
+        0.75: "#F5A623", 1.0: "#E74C3C",
+      },
+    });
+    layer.addTo(map);
+    return () => { map.removeLayer(layer); };
+  }, [points, max, map]);
+  return null;
+}
+
 export default function MapPage() {
   const [filters, setFilters] = useState({ season: "DX", province: "ALL", category: "ALL", status: "ALL" });
+  const [layers, setLayers] = useState({ boundaries: true, heatmap: false });
   const [htxList, setHtxList] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cats, setCats] = useState([]);
   const [seasons, setSeasons] = useState([]);
+  const [geojson, setGeojson] = useState(null);
+  const [heat, setHeat] = useState({ points: [], max_density: 1 });
   const [loading, setLoading] = useState(true);
   const [selectedDetail, setSelectedDetail] = useState(null);
 
   useEffect(() => {
     (async () => {
-      const [p, c, s] = await Promise.all([
+      const [p, c, s, gj, h] = await Promise.all([
         api.get("/provinces"),
         api.get("/machine-categories"),
         api.get("/seasons"),
+        api.get("/geojson/provinces"),
+        api.get("/map/heatmap"),
       ]);
       setProvinces(p.data);
       setCats(c.data);
       setSeasons(s.data);
+      setGeojson(gj.data);
+      setHeat(h.data);
     })();
   }, []);
 
   useEffect(() => {
     setLoading(true);
-    const params = {};
+    const params = { season: filters.season };
     if (filters.province !== "ALL") params.province = filters.province;
     if (filters.category !== "ALL") params.category = filters.category;
     if (filters.status !== "ALL") params.status = filters.status;
@@ -93,20 +123,39 @@ export default function MapPage() {
     setSelectedDetail(data);
   };
 
+  const geoStyle = (feature) => ({
+    color: PROVINCE_COLORS[feature.properties.code] || "#00A3E0",
+    weight: 2,
+    fillColor: PROVINCE_COLORS[feature.properties.code] || "#00A3E0",
+    fillOpacity: 0.08,
+    dashArray: "6 4",
+  });
+
   return (
     <div className="relative w-full" style={{ height: "calc(100vh - 3.5rem)" }} data-testid="map-page">
-      <MapContainer
-        center={[10.2, 105.6]}
-        zoom={7}
-        style={{ width: "100%", height: "100%" }}
-        zoomControl={false}
-      >
+      <MapContainer center={[10.2, 105.6]} zoom={7} style={{ width: "100%", height: "100%" }} zoomControl={false}>
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <MapAutoFit points={htxList} />
-        {htxList.map((h) => (
+
+        {layers.boundaries && geojson && (
+          <GeoJSON
+            key={`geo-${filters.season}`}
+            data={geojson}
+            style={geoStyle}
+            onEachFeature={(f, layer) => {
+              layer.bindTooltip(f.properties.name, { permanent: false, direction: "center", className: "mkg-boundary-tip" });
+            }}
+          />
+        )}
+
+        {layers.heatmap && heat.points.length > 0 && (
+          <HeatLayer points={heat.points} max={heat.max_density} />
+        )}
+
+        {!layers.heatmap && htxList.map((h) => (
           <Marker
             key={h.id}
             position={[h.lat, h.lng]}
@@ -115,17 +164,13 @@ export default function MapPage() {
             <Popup>
               <div className="min-w-[240px]" data-testid={`popup-${h.code}`}>
                 <div className="flex items-start gap-2">
-                  <div
-                    className="w-8 h-8 rounded-md flex items-center justify-center text-white flex-shrink-0"
-                    style={{ background: STATUS_COLORS[h.status_color] || STATUS_COLORS.gray }}
-                  >
+                  <div className="w-8 h-8 rounded-md flex items-center justify-center text-white flex-shrink-0"
+                    style={{ background: STATUS_COLORS[h.status_color] || STATUS_COLORS.gray }}>
                     <Sprout className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="font-display font-bold text-base leading-tight">{h.name}</div>
-                    <div className="text-xs text-slate-500">
-                      Mã: <span className="font-mono">{h.code}</span>
-                    </div>
+                    <div className="text-xs text-slate-500">Mã: <span className="font-mono">{h.code}</span></div>
                   </div>
                 </div>
                 <div className="mt-3 space-y-1 text-xs">
@@ -135,10 +180,7 @@ export default function MapPage() {
                   <div className="flex justify-between"><span className="text-slate-500">Hoạt động</span><span className="font-medium">{h.active_count}</span></div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500">Tỷ lệ đáp ứng</span>
-                    <span
-                      className="px-2 py-0.5 rounded text-white text-xs font-medium"
-                      style={{ background: STATUS_COLORS[h.status_color] }}
-                    >
+                    <span className="px-2 py-0.5 rounded text-white text-xs font-medium" style={{ background: STATUS_COLORS[h.status_color] }}>
                       {h.coverage_ratio == null ? "—" : `${(h.coverage_ratio * 100).toFixed(0)}% · ${h.status_label}`}
                     </span>
                   </div>
@@ -168,97 +210,121 @@ export default function MapPage() {
           <h3 className="font-display font-bold text-sm uppercase tracking-wide">Bộ lọc bản đồ</h3>
         </div>
 
-        <FilterSelect
-          icon={Calendar} label="Mùa vụ" testid="filter-season"
-          value={filters.season}
-          onChange={(v) => setFilters({ ...filters, season: v })}
-          options={[["ALL", "Tất cả"], ...seasons.map((s) => [s.code, s.name])]}
-        />
-        <FilterSelect
-          icon={MapPin} label="Địa bàn" testid="filter-province"
-          value={filters.province}
-          onChange={(v) => setFilters({ ...filters, province: v })}
-          options={[["ALL", "Toàn vùng"], ...provinces.map((p) => [p.code, p.name])]}
-        />
-        <FilterSelect
-          icon={Tractor} label="Chủng loại máy" testid="filter-category"
-          value={filters.category}
-          onChange={(v) => setFilters({ ...filters, category: v })}
-          options={[["ALL", "Tất cả chủng loại"], ...cats.map((c) => [c.code, c.name])]}
-        />
-        <FilterSelect
-          icon={Activity} label="Tình trạng" testid="filter-status"
-          value={filters.status}
-          onChange={(v) => setFilters({ ...filters, status: v })}
-          options={[
-            ["ALL", "Tất cả"],
-            ["hoat_dong", "Hoạt động"],
-            ["bao_tri", "Bảo trì"],
-            ["hong", "Hỏng"],
-          ]}
-        />
-
-        <div className="mt-4 pt-3 border-t border-slate-200/60">
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Chú giải</div>
-          <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-            <LegendItem color={STATUS_COLORS.green} label={`Đủ (${summary.green})`} />
-            <LegendItem color={STATUS_COLORS.amber} label={`Thiếu nhẹ (${summary.amber})`} />
-            <LegendItem color={STATUS_COLORS.red} label={`Thiếu (${summary.red})`} />
-            <LegendItem color={STATUS_COLORS.gray} label={`Chưa có (${summary.gray})`} />
+        {/* Season pill switcher */}
+        <div className="mb-3">
+          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1.5">
+            <Calendar className="w-3 h-3" /> Mùa vụ
           </div>
+          <div className="grid grid-cols-3 gap-1 bg-white/60 rounded-lg p-1 border border-slate-200/50" data-testid="season-switcher">
+            {seasons.map((s) => (
+              <button
+                key={s.code}
+                data-testid={`season-${s.code}`}
+                onClick={() => setFilters({ ...filters, season: s.code })}
+                className={`text-[11px] font-medium py-1.5 rounded-md transition-colors ${
+                  filters.season === s.code
+                    ? "bg-[#00A82D] text-white shadow-sm"
+                    : "text-slate-600 hover:bg-white"
+                }`}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <FilterSelect icon={MapPin} label="Địa bàn" testid="filter-province"
+          value={filters.province} onChange={(v) => setFilters({ ...filters, province: v })}
+          options={[["ALL", "Toàn vùng"], ...provinces.map((p) => [p.code, p.name])]} />
+        <FilterSelect icon={Tractor} label="Chủng loại máy" testid="filter-category"
+          value={filters.category} onChange={(v) => setFilters({ ...filters, category: v })}
+          options={[["ALL", "Tất cả chủng loại"], ...cats.map((c) => [c.code, c.name])]} />
+        <FilterSelect icon={Activity} label="Tình trạng" testid="filter-status"
+          value={filters.status} onChange={(v) => setFilters({ ...filters, status: v })}
+          options={[["ALL", "Tất cả"], ["hoat_dong", "Hoạt động"], ["bao_tri", "Bảo trì"], ["hong", "Hỏng"]]} />
+
+        {/* Layer toggles */}
+        <div className="mt-4 pt-3 border-t border-slate-200/60">
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Lớp bản đồ</div>
+          <LayerToggle
+            icon={Waypoints} testid="toggle-boundaries" label="Ranh giới 6 tỉnh"
+            active={layers.boundaries}
+            onToggle={() => setLayers({ ...layers, boundaries: !layers.boundaries })}
+          />
+          <LayerToggle
+            icon={Flame} testid="toggle-heatmap" label="Mật độ HP / ha"
+            active={layers.heatmap}
+            onToggle={() => setLayers({ ...layers, heatmap: !layers.heatmap })}
+          />
+        </div>
+
+        <div className="mt-3 pt-3 border-t border-slate-200/60">
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Chú giải</div>
+          {!layers.heatmap ? (
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              <LegendItem color={STATUS_COLORS.green} label={`Đủ (${summary.green})`} />
+              <LegendItem color={STATUS_COLORS.amber} label={`Thiếu nhẹ (${summary.amber})`} />
+              <LegendItem color={STATUS_COLORS.red} label={`Thiếu (${summary.red})`} />
+              <LegendItem color={STATUS_COLORS.gray} label={`Chưa có (${summary.gray})`} />
+            </div>
+          ) : (
+            <div className="text-[11px] space-y-1">
+              <div className="h-2 rounded" style={{
+                background: "linear-gradient(90deg, #00A82D 0%, #00C4B4 35%, #00A3E0 55%, #F5A623 75%, #E74C3C 100%)"
+              }} />
+              <div className="flex justify-between text-slate-500">
+                <span>Thấp</span><span>Cao (max {heat.max_density.toFixed(2)} HP/ha)</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Bottom overview table */}
-      <div className="absolute bottom-6 right-6 w-[380px] max-h-[45vh] mkg-glass rounded-xl overflow-hidden z-[1000]" data-testid="map-status-table">
-        <div className="px-4 py-3 border-b border-white/40 flex items-center gap-2">
-          <Layers className="w-4 h-4 text-[#00A82D]" />
-          <div className="font-display font-bold text-sm uppercase tracking-wide">Tình trạng theo Khu vực</div>
-          <div className="ml-auto text-[10px] text-slate-500">{htxList.length} HTX</div>
-        </div>
-        <div className="overflow-y-auto max-h-[calc(45vh-2.5rem)]">
-          <table className="w-full text-xs">
-            <thead className="text-slate-500">
-              <tr className="border-b border-white/40">
-                <th className="text-left px-3 py-2">HTX</th>
-                <th className="text-center px-2 py-2">Máy</th>
-                <th className="text-right px-3 py-2">Tỷ lệ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {htxList.slice(0, 60).map((h) => (
-                <tr key={h.id} className="border-b border-white/30 hover:bg-white/40" data-testid={`row-${h.code}`}>
-                  <td className="px-3 py-2">
-                    <div className="font-medium truncate max-w-[140px]">{h.name}</div>
-                    <div className="text-[10px] text-slate-500">{h.code}</div>
-                  </td>
-                  <td className="text-center px-2 py-2">{h.active_count}/{h.machine_count}</td>
-                  <td className="text-right px-3 py-2">
-                    <span
-                      className="inline-block px-2 py-0.5 rounded text-white text-[10px] font-medium"
-                      style={{ background: STATUS_COLORS[h.status_color] }}
-                    >
-                      {h.coverage_ratio == null ? "—" : `${(h.coverage_ratio * 100).toFixed(0)}%`}
-                    </span>
-                  </td>
+      {!layers.heatmap && (
+        <div className="absolute bottom-6 right-6 w-[380px] max-h-[45vh] mkg-glass rounded-xl overflow-hidden z-[1000]" data-testid="map-status-table">
+          <div className="px-4 py-3 border-b border-white/40 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#00A82D]" />
+            <div className="font-display font-bold text-sm uppercase tracking-wide">Tình trạng theo Khu vực</div>
+            <div className="ml-auto text-[10px] text-slate-500">{htxList.length} HTX · {seasons.find(s => s.code === filters.season)?.name}</div>
+          </div>
+          <div className="overflow-y-auto max-h-[calc(45vh-2.5rem)]">
+            <table className="w-full text-xs">
+              <thead className="text-slate-500">
+                <tr className="border-b border-white/40">
+                  <th className="text-left px-3 py-2">HTX</th>
+                  <th className="text-center px-2 py-2">Máy</th>
+                  <th className="text-right px-3 py-2">Tỷ lệ</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {htxList.slice(0, 60).map((h) => (
+                  <tr key={h.id} className="border-b border-white/30 hover:bg-white/40" data-testid={`row-${h.code}`}>
+                    <td className="px-3 py-2">
+                      <div className="font-medium truncate max-w-[140px]">{h.name}</div>
+                      <div className="text-[10px] text-slate-500">{h.code}</div>
+                    </td>
+                    <td className="text-center px-2 py-2">{h.active_count}/{h.machine_count}</td>
+                    <td className="text-right px-3 py-2">
+                      <span className="inline-block px-2 py-0.5 rounded text-white text-[10px] font-medium"
+                        style={{ background: STATUS_COLORS[h.status_color] }}>
+                        {h.coverage_ratio == null ? "—" : `${(h.coverage_ratio * 100).toFixed(0)}%`}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Detail modal */}
       {selectedDetail && (
-        <div
-          className="fixed inset-0 bg-black/40 z-[2000] flex items-center justify-center p-6"
-          onClick={() => setSelectedDetail(null)}
-          data-testid="htx-detail-modal"
-        >
-          <div
-            className="bg-white rounded-xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 bg-black/40 z-[2000] flex items-center justify-center p-6"
+          onClick={() => setSelectedDetail(null)} data-testid="htx-detail-modal">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}>
             <div className="p-5 bg-gradient-to-r from-[#00A3E0] to-[#00C4B4] text-white">
               <div className="font-display font-bold text-xl">{selectedDetail.htx.name}</div>
               <div className="text-white/85 text-xs">{selectedDetail.htx.code} · {selectedDetail.htx.owner_name}</div>
@@ -293,11 +359,8 @@ export default function MapPage() {
                   ))}
                 </tbody>
               </table>
-              <button
-                data-testid="close-detail-btn"
-                onClick={() => setSelectedDetail(null)}
-                className="mt-4 px-4 py-2 rounded-md bg-slate-900 text-white text-sm"
-              >
+              <button data-testid="close-detail-btn" onClick={() => setSelectedDetail(null)}
+                className="mt-4 px-4 py-2 rounded-md bg-slate-900 text-white text-sm">
                 Đóng
               </button>
             </div>
@@ -320,17 +383,31 @@ function FilterSelect({ icon: Icon, label, value, onChange, options, testid }) {
       <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1">
         <Icon className="w-3 h-3" /> {label}
       </div>
-      <select
-        data-testid={testid}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full text-sm bg-white border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"
-      >
-        {options.map(([v, l]) => (
-          <option key={v} value={v}>{l}</option>
-        ))}
+      <select data-testid={testid} value={value} onChange={(e) => onChange(e.target.value)}
+        className="w-full text-sm bg-white border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]">
+        {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
     </label>
+  );
+}
+
+function LayerToggle({ icon: Icon, label, active, onToggle, testid }) {
+  return (
+    <button
+      data-testid={testid}
+      onClick={onToggle}
+      className={`w-full flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md mb-1.5 transition-colors border ${
+        active
+          ? "bg-[#00A3E0]/10 border-[#00A3E0]/30 text-[#00A3E0]"
+          : "bg-white/50 border-slate-200 text-slate-600 hover:bg-white"
+      }`}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      <span className="flex-1 text-left">{label}</span>
+      <span className={`w-8 h-4 rounded-full relative transition-colors ${active ? "bg-[#00A3E0]" : "bg-slate-300"}`}>
+        <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${active ? "left-4" : "left-0.5"}`} />
+      </span>
+    </button>
   );
 }
 

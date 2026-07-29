@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { useEffect, useState, useRef } from "react";
+import { api, API } from "../lib/api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
-import { Building2, Wrench, PlusCircle, Search, UploadCloud, Trash2, PencilLine } from "lucide-react";
+import { Building2, Wrench, PlusCircle, Search, UploadCloud, Trash2, PencilLine, FileSpreadsheet, CheckCircle2, XCircle, AlertTriangle, Download, Loader2 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
 const STATUS_LABEL = {
@@ -37,6 +37,7 @@ function HTXTab() {
   const [q, setQ] = useState("");
   const [province, setProvince] = useState("ALL");
   const [form, setForm] = useState(null);
+  const [importer, setImporter] = useState(false);
 
   const load = async () => {
     const { data } = await api.get("/htx", { params: { q: q || undefined, province: province === "ALL" ? undefined : province } });
@@ -96,11 +97,13 @@ function HTXTab() {
         <button
           data-testid="htx-upload"
           className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
-          onClick={() => toast.info("Chức năng tải Excel đang trong giai đoạn phát triển")}
+          onClick={() => setImporter(true)}
         >
           <UploadCloud className="w-4 h-4" /> Tải Excel
         </button>
       </div>
+
+      {importer && <ImportExcelModal onClose={() => setImporter(false)} onDone={() => { setImporter(false); load(); }} />}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
@@ -323,5 +326,244 @@ function SelectField({ label, value, onChange, options, disabled }) {
         {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
     </label>
+  );
+}
+
+function ImportExcelModal({ onClose, onDone }) {
+  const [file, setFile] = useState(null);
+  const [dragging, setDragging] = useState(false);
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [dryRun, setDryRun] = useState(true);
+  const inputRef = useRef(null);
+
+  const handleFile = (f) => {
+    if (!f) return;
+    if (!f.name.toLowerCase().endsWith(".xlsx")) {
+      toast.error("Chỉ chấp nhận tệp .xlsx");
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      toast.error("Tệp vượt quá 10MB");
+      return;
+    }
+    setFile(f);
+    setResult(null);
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    handleFile(e.dataTransfer.files?.[0]);
+  };
+
+  const doUpload = async () => {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const token = localStorage.getItem("mkg_token");
+      const resp = await fetch(`${API}/htx/import-excel?dry_run=${dryRun}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || "Lỗi tải lên");
+      setResult(data);
+      if (!dryRun && data.inserted > 0) {
+        toast.success(`Đã nhập ${data.inserted} HTX mới`);
+      } else if (dryRun) {
+        toast.info(`Kiểm tra hoàn tất · ${data.ok_count} hợp lệ, ${data.error_count} lỗi`);
+      }
+    } catch (e) {
+      toast.error(e.message || "Lỗi");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const downloadTemplate = async () => {
+    const token = localStorage.getItem("mkg_token");
+    const resp = await fetch(`${API}/htx/import-template`, { headers: { Authorization: `Bearer ${token}` } });
+    const blob = await resp.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "htx-import-template.xlsx";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const finalize = async () => {
+    setDryRun(false);
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const token = localStorage.getItem("mkg_token");
+      const resp = await fetch(`${API}/htx/import-excel?dry_run=false`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || "Lỗi tải lên");
+      toast.success(`Đã nhập ${data.inserted} HTX mới vào hệ thống`);
+      onDone();
+    } catch (e) {
+      toast.error(e.message || "Lỗi");
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-6" onClick={onClose} data-testid="import-excel-modal">
+      <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="p-5 border-b border-slate-200 flex items-center gap-3 bg-gradient-to-r from-[#00A82D]/5 to-[#00A3E0]/5">
+          <div className="w-10 h-10 rounded-md bg-[#00A82D] text-white flex items-center justify-center">
+            <FileSpreadsheet className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-display font-bold text-xl">Nhập danh bạ HTX từ Excel</div>
+            <div className="text-xs text-slate-500">Kéo thả tệp .xlsx (tối đa 10MB, ~1.200 dòng)</div>
+          </div>
+          <button onClick={downloadTemplate} className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50" data-testid="download-template-btn">
+            <Download className="w-3.5 h-3.5" /> Tải mẫu
+          </button>
+        </div>
+
+        <div className="p-6 overflow-y-auto flex-1">
+          {!result && (
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+              onClick={() => inputRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
+                dragging ? "border-[#00A82D] bg-[#00A82D]/5" : "border-slate-300 hover:border-[#00A3E0] hover:bg-slate-50"
+              }`}
+              data-testid="dropzone"
+            >
+              <UploadCloud className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+              {file ? (
+                <div>
+                  <div className="font-medium text-slate-800">{file.name}</div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {(file.size / 1024).toFixed(1)} KB · Nhấp để thay tệp
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="font-medium text-slate-700">Kéo thả tệp .xlsx vào đây</div>
+                  <div className="text-xs text-slate-500 mt-1">hoặc nhấp để chọn tệp từ máy</div>
+                </div>
+              )}
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".xlsx"
+                className="hidden"
+                data-testid="file-input"
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+            </div>
+          )}
+
+          {result && (
+            <div className="space-y-4" data-testid="import-result">
+              <div className="grid grid-cols-3 gap-3">
+                <ResultStat icon={CheckCircle2} color="#00A82D" label="Hợp lệ" value={result.ok_count} />
+                <ResultStat icon={XCircle} color="#E74C3C" label="Lỗi" value={result.error_count} />
+                <ResultStat icon={AlertTriangle} color="#F5A623" label="Đã tồn tại" value={result.skipped_count} />
+              </div>
+
+              {result.dry_run && result.ok_count > 0 && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-xs text-emerald-800">
+                  Kiểm tra hoàn tất. Nhấn <b>Xác nhận nhập</b> để lưu {result.ok_count} HTX hợp lệ vào hệ thống.
+                </div>
+              )}
+              {!result.dry_run && (
+                <div className="bg-green-50 border border-green-200 rounded-md p-3 text-xs text-green-800">
+                  Đã nhập thành công <b>{result.inserted}</b> HTX vào hệ thống.
+                </div>
+              )}
+
+              {result.errors?.length > 0 && (
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1">Chi tiết lỗi</div>
+                  <div className="max-h-56 overflow-y-auto border border-slate-200 rounded-md">
+                    <table className="w-full text-xs">
+                      <thead className="bg-slate-50 sticky top-0">
+                        <tr>
+                          <th className="text-left px-3 py-2">Dòng</th>
+                          <th className="text-left px-3 py-2">Mã</th>
+                          <th className="text-left px-3 py-2">Lỗi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {result.errors.map((e, i) => (
+                          <tr key={i} className="border-t border-slate-100">
+                            <td className="px-3 py-1.5 font-mono">{e.row}</td>
+                            <td className="px-3 py-1.5">{e.code || "—"}</td>
+                            <td className="px-3 py-1.5 text-[#E74C3C]">{e.errors.join(" · ")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {result.skipped?.length > 0 && (
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1">Đã bỏ qua (trùng)</div>
+                  <div className="max-h-32 overflow-y-auto text-xs text-slate-600">
+                    {result.skipped.map((s, i) => (
+                      <div key={i} className="border-t border-slate-100 py-1">
+                        Dòng {s.row} · <span className="font-mono">{s.code}</span> — {s.reason}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-slate-200 flex items-center gap-2 bg-slate-50">
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-white border border-slate-300" data-testid="import-cancel">
+            {result && !result.dry_run ? "Đóng" : "Hủy"}
+          </button>
+          {file && !result && (
+            <button onClick={doUpload} disabled={busy} className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm rounded-md bg-[#00A3E0] hover:bg-[#0089BE] text-white font-medium disabled:opacity-60" data-testid="import-validate">
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              Kiểm tra dữ liệu
+            </button>
+          )}
+          {result && result.dry_run && result.ok_count > 0 && (
+            <button onClick={finalize} disabled={busy} className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white font-medium disabled:opacity-60" data-testid="import-confirm">
+              {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              Xác nhận nhập {result.ok_count} HTX
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResultStat({ icon: Icon, color, label, value }) {
+  return (
+    <div className="border border-slate-200 rounded-md p-3 flex items-center gap-3">
+      <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ background: `${color}15`, color }}>
+        <Icon className="w-4 h-4" />
+      </div>
+      <div>
+        <div className="text-[10px] uppercase tracking-widest text-slate-500">{label}</div>
+        <div className="font-display font-bold text-2xl">{value}</div>
+      </div>
+    </div>
   );
 }

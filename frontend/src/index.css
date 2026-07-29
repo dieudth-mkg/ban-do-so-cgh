@@ -125,6 +125,20 @@ h6,
     box-shadow: 0 12px 40px -12px rgba(15, 23, 42, 0.25);
 }
 
+.mkg-boundary-tip {
+    background: rgba(15, 23, 42, 0.85) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+.mkg-boundary-tip::before {
+    display: none !important;
+}
+
 /* Sidenav highlight */
 .mkg-sidenav-item {
     transition:
