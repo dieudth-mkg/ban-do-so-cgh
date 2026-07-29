@@ -1,0 +1,47 @@
+{
+  "summary": "Phase 3 E2E testing PASSED. Backend: 18/18 phase3 pytest tests PASSED — mock HTX endpoint returns {source,count,updates} with 40-80 items and expected fields; /admin/settings GET+PATCH persists and returns default_htx_sync_url pointing at mock; sync trigger via httpx succeeds (updated_count > 0, latency_ms >= 0, source_url returned), staff gets 403 on trigger/logs/settings, invalid URL returns status='failed' cleanly without DB corruption; sync-logs persisted with latency_ms and source_url; machines/import-template returns valid xlsx to admin (403 for staff); machine import dry-run OK, all 4 validation error cases fire (invalid htx_code, invalid category_code, invalid status, missing serial_no), duplicate detection by (owner+category+serial) triggers skipped_count, dry_run=false actually inserts and cleanup removes; /reports/export with province/season/category filters returns valid xlsx & pdf with filter names embedded in title ('Hè Thu','Cần Thơ'); /htx returns commune field with 'Xã …' prefixes after seed migration. Regression: existing 46 tests (phase1 backend_test.py + phase2 test_phase2.py) also PASS (2 apparent failures were stale-state from prior test iterations and cleared after DB cleanup). Frontend Playwright: admin login OK; Admin > Đồng bộ HTX App tab shows sync-url-input, sync-url-save, trigger-sync + log table with all required columns (Nguồn URL / Cập nhật / Không khớp / Độ trễ / Trạng thái); saving custom URL 'https://example.com/custom-updates' persists across full page reload; trigger-sync produces new rows in log table (12 rows visible); MapPage — dispatching click on a leaflet-interactive polygon SVG sets province filter, shows drilldown-badge and commune-panel with 5 commune groups, drilldown-clear hides both; 'Gom cụm theo Xã' toggle text visible; Reports page filter panel (report-season-DX/HT/TD + report-province + report-category) visible; clicking export-xlsx-supply_demand after setting season=HT & province=CT downloads 'supply_demand-HT-CT.xlsx' (filter suffix present exactly as spec); DataManagement HTX + Machines tabs both open ImportModal with correct testids (import-modal-htx/machines, dropzone-htx/machines, download-template-htx/machines), machine template downloads successfully as 'machines-import-template.xlsx'.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Admin > SyncTab log table", "issue": "React 'Encountered two children with the same key' warning fires when multiple sync-log rows share the same key. Backend sync-log id is 'sync-{int(started_at.timestamp())}' (1s granularity) → collisions when triggered rapidly. Cosmetic only, but pollutes console.", "selector": "table tbody tr (in tab-sync)", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase3.py",
+    "/app/backend/tests/test_phase2.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/phase3_results.xml"
+  ],
+  "action_items": [
+    "Optional low-priority: change sync-log id to include microseconds or a UUID suffix to eliminate React duplicate-key warnings when triggering syncs in quick succession (e.g., f\"sync-{started_at.timestamp():.6f}\" or uuid4().hex)."
+  ],
+  "critical_code_review_comments": [
+    "server.py is now ~1200 lines with 40+ endpoints; strongly recommend splitting into routers (auth/htx/machines/dashboard/reports/admin/import/sync) before phase 4. Cognitive load is high.",
+    "SyncLog id uses second-precision timestamp — causes React key collisions; use timestamp() (float) or uuid for uniqueness.",
+    "trigger_sync uses httpx.AsyncClient(timeout=15.0) but no retry/backoff; if the real HTX endpoint is flaky, a single failure ends the sync. Consider 1-2 retries with exponential backoff.",
+    "Machine import inserts docs but does not set 'active' field; existing machine schema uses status but some queries may implicitly rely on active — verify machines list shows imported items in all UIs.",
+    "Machine import duplicate check uses (owner_name + category_code + serial_no); if owner_name changes on an HTX, a duplicate serial across HTXs of same category+serial might slip through. Consider (htx_id, category_code, serial_no) as the natural unique key.",
+    "GET /admin/settings currently returns only htx_sync_url; if more settings are added, either return the entire settings collection or namespace them under a dict — otherwise the endpoint will grow ad-hoc.",
+    "Trigger endpoint writes both a sync_logs entry and a system_logs entry — some code duplication and the system_logs write has a slightly awkward `finished_iso if (finished_iso := ...)` assignment expression that is hard to read; refactor for clarity.",
+    "Mock HTX endpoint is publicly reachable (no auth). For production safety consider gating it behind an internal-only path or a header token, or removing it from prod entirely.",
+    "Report export filenames on the backend still return generic '{kind}.xlsx' (frontend builds the '-HT-CT' suffix locally). Consider building the suffix server-side too for consistency when API is called directly (e.g. via curl)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase3.py"
+  ],
+  "success_rate": {
+    "backend": "100% (18/18 phase3 + 46/46 phase1&2 regression)",
+    "frontend": "100% (all phase3 UI features verified)"
+  },
+  "test_credentials": "admin@mekonggreen.vn/admin123, canbo@dcrd.gov.vn/canbo123 - both work",
+  "seed_data_creation": "test_phase3.py inserts and immediately deletes TEST-M-* machines and toggles htx_sync_url setting back to empty at end. Frontend tests set custom sync URL then reset to empty. No lingering test data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Phase 3 verification complete. New endpoints: /api/mock-htx-app/machine-updates (public), /api/admin/sync-logs/trigger (httpx-driven), /api/admin/settings (htx_sync_url), /api/machines/import-template, /api/machines/import-excel, /api/reports/export?season&province&category. New testids: sync-url-input, sync-url-save, trigger-sync, drilldown-badge, drilldown-clear, commune-panel, commune-{name}, reports-filter, report-season-{DX|HT|TD}, report-province, report-category, export-{xlsx|pdf}-{kind}, import-modal-{htx|machines}, dropzone-{htx|machines}, file-input-{htx|machines}, import-validate-{...}, import-confirm-{...}, download-template-{htx|machines}. Backend sync log id key collision causes React duplicate-key warning (minor). Polygon click drilldown works via dispatchEvent(MouseEvent) — direct playwright .click() on the SVG path may be intercepted by markers overlaying province center, so integration tests should either dispatch a synthetic MouseEvent or click at a polygon edge/vertex.",
+  "rca of the issue": "N/A — no functional blockers. Only 1 minor: React key collision in Admin SyncTab table caused by sync-log id using second-precision timestamp. Fix: change id to include microseconds or UUID."
+}

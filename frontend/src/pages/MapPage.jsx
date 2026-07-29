@@ -2,18 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet.heat";
+import "leaflet.markercluster";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   Tractor, Sprout, Filter, MapPin, Calendar, Activity, Phone, Layers,
-  Flame, Waypoints,
+  Flame, Waypoints, X,
 } from "lucide-react";
 import { api } from "../lib/api";
 
 const STATUS_COLORS = {
-  green: "#00A82D",
-  amber: "#F5A623",
-  red: "#E74C3C",
-  gray: "#95A5A6",
+  green: "#00A82D", amber: "#F5A623", red: "#E74C3C", gray: "#95A5A6",
 };
 
 const PROVINCE_COLORS = {
@@ -36,8 +34,7 @@ function makePinIcon(color) {
     </svg>,
   );
   return L.divIcon({
-    className: "mkg-marker-pin",
-    html: svg,
+    className: "mkg-marker-pin", html: svg,
     iconSize: [32, 42], iconAnchor: [16, 42], popupAnchor: [0, -38],
   });
 }
@@ -47,7 +44,7 @@ function MapAutoFit({ points }) {
   useEffect(() => {
     if (!points?.length) return;
     const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 9 });
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
   }, [points, map]);
   return null;
 }
@@ -58,12 +55,8 @@ function HeatLayer({ points, max }) {
     if (!points?.length) return;
     const data = points.map((p) => [p.lat, p.lng, p.hp_per_ha]);
     const layer = L.heatLayer(data, {
-      radius: 45, blur: 30, maxZoom: 10,
-      max: max || 1,
-      gradient: {
-        0.0: "#00A82D", 0.35: "#00C4B4", 0.55: "#00A3E0",
-        0.75: "#F5A623", 1.0: "#E74C3C",
-      },
+      radius: 45, blur: 30, maxZoom: 10, max: max || 1,
+      gradient: { 0.0: "#00A82D", 0.35: "#00C4B4", 0.55: "#00A3E0", 0.75: "#F5A623", 1.0: "#E74C3C" },
     });
     layer.addTo(map);
     return () => { map.removeLayer(layer); };
@@ -71,9 +64,48 @@ function HeatLayer({ points, max }) {
   return null;
 }
 
+function ClusterLayer({ htxList, onPopupDetail }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!htxList?.length) return;
+    const group = L.markerClusterGroup({
+      chunkedLoading: true, maxClusterRadius: 55,
+      spiderfyOnMaxZoom: true, showCoverageOnHover: false,
+    });
+    htxList.forEach((h) => {
+      const icon = makePinIcon(STATUS_COLORS[h.status_color] || STATUS_COLORS.gray);
+      const m = L.marker([h.lat, h.lng], { icon });
+      const popupHtml = `
+        <div style="min-width:220px;font-family:'IBM Plex Sans',sans-serif">
+          <div style="display:flex;align-items:start;gap:8px">
+            <div style="width:28px;height:28px;border-radius:6px;background:${STATUS_COLORS[h.status_color]};color:white;display:flex;align-items:center;justify-content:center;font-weight:700">${h.name?.[4] || "H"}</div>
+            <div><div style="font-weight:700;font-size:14px">${h.name}</div>
+            <div style="font-size:11px;color:#64748b">${h.code} · ${h.commune || ""}</div></div>
+          </div>
+          <div style="margin-top:8px;font-size:12px;line-height:1.5">
+            <div>Chủ sở hữu: <b>${h.owner_name}</b></div>
+            <div>Diện tích: <b>${h.cultivated_area_ha.toLocaleString("vi-VN")} ha</b></div>
+            <div>Máy: <b>${h.active_count}/${h.machine_count}</b></div>
+            <div>Đáp ứng: <span style="background:${STATUS_COLORS[h.status_color]};color:white;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600">${h.coverage_ratio == null ? "—" : (h.coverage_ratio * 100).toFixed(0) + "% · " + h.status_label}</span></div>
+          </div>
+          <button data-htx-id="${h.id}" class="mkg-cluster-detail-btn" style="margin-top:10px;width:100%;padding:6px;font-size:12px;font-weight:600;background:#00A3E0;color:white;border:none;border-radius:4px;cursor:pointer">Xem chi tiết HTX</button>
+        </div>`;
+      m.bindPopup(popupHtml);
+      m.on("popupopen", (e) => {
+        const btn = e.popup._contentNode?.querySelector(".mkg-cluster-detail-btn");
+        if (btn) btn.onclick = () => onPopupDetail(h.id);
+      });
+      group.addLayer(m);
+    });
+    group.addTo(map);
+    return () => { map.removeLayer(group); };
+  }, [htxList, map, onPopupDetail]);
+  return null;
+}
+
 export default function MapPage() {
   const [filters, setFilters] = useState({ season: "DX", province: "ALL", category: "ALL", status: "ALL" });
-  const [layers, setLayers] = useState({ boundaries: true, heatmap: false });
+  const [layers, setLayers] = useState({ boundaries: true, heatmap: false, cluster: false });
   const [htxList, setHtxList] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cats, setCats] = useState([]);
@@ -86,17 +118,11 @@ export default function MapPage() {
   useEffect(() => {
     (async () => {
       const [p, c, s, gj, h] = await Promise.all([
-        api.get("/provinces"),
-        api.get("/machine-categories"),
-        api.get("/seasons"),
-        api.get("/geojson/provinces"),
-        api.get("/map/heatmap"),
+        api.get("/provinces"), api.get("/machine-categories"),
+        api.get("/seasons"), api.get("/geojson/provinces"), api.get("/map/heatmap"),
       ]);
-      setProvinces(p.data);
-      setCats(c.data);
-      setSeasons(s.data);
-      setGeojson(gj.data);
-      setHeat(h.data);
+      setProvinces(p.data); setCats(c.data); setSeasons(s.data);
+      setGeojson(gj.data); setHeat(h.data);
     })();
   }, []);
 
@@ -125,28 +151,57 @@ export default function MapPage() {
 
   const geoStyle = (feature) => ({
     color: PROVINCE_COLORS[feature.properties.code] || "#00A3E0",
-    weight: 2,
+    weight: filters.province === feature.properties.code ? 3.5 : 2,
     fillColor: PROVINCE_COLORS[feature.properties.code] || "#00A3E0",
-    fillOpacity: 0.08,
-    dashArray: "6 4",
+    fillOpacity: filters.province === feature.properties.code ? 0.18 : 0.08,
+    dashArray: filters.province === feature.properties.code ? undefined : "6 4",
+    className: "mkg-province-hover",
   });
+
+  const clusterMode = filters.province !== "ALL" || layers.cluster;
+  const showMarkers = !layers.heatmap;
+
+  // Group HTX by commune for the drilldown list
+  const byCommune = useMemo(() => {
+    if (filters.province === "ALL") return null;
+    const grp = {};
+    htxList.forEach((h) => {
+      const key = h.commune || "(chưa có)";
+      grp[key] = grp[key] || [];
+      grp[key].push(h);
+    });
+    return grp;
+  }, [htxList, filters.province]);
+
+  const activeProvinceName = filters.province !== "ALL"
+    ? provinces.find((p) => p.code === filters.province)?.name : null;
 
   return (
     <div className="relative w-full" style={{ height: "calc(100vh - 3.5rem)" }} data-testid="map-page">
       <MapContainer center={[10.2, 105.6]} zoom={7} style={{ width: "100%", height: "100%" }} zoomControl={false}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
         <MapAutoFit points={htxList} />
 
         {layers.boundaries && geojson && (
           <GeoJSON
-            key={`geo-${filters.season}`}
+            key={`geo-${filters.season}-${filters.province}`}
             data={geojson}
             style={geoStyle}
             onEachFeature={(f, layer) => {
               layer.bindTooltip(f.properties.name, { permanent: false, direction: "center", className: "mkg-boundary-tip" });
+              layer.on("click", () => {
+                setFilters((prev) => ({
+                  ...prev,
+                  province: prev.province === f.properties.code ? "ALL" : f.properties.code,
+                }));
+              });
+              layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.22 }));
+              layer.on("mouseout", () => {
+                if (filters.province !== f.properties.code) {
+                  layer.setStyle({ fillOpacity: 0.08 });
+                }
+              });
             }}
           />
         )}
@@ -155,12 +210,13 @@ export default function MapPage() {
           <HeatLayer points={heat.points} max={heat.max_density} />
         )}
 
-        {!layers.heatmap && htxList.map((h) => (
-          <Marker
-            key={h.id}
-            position={[h.lat, h.lng]}
-            icon={makePinIcon(STATUS_COLORS[h.status_color] || STATUS_COLORS.gray)}
-          >
+        {showMarkers && clusterMode && (
+          <ClusterLayer htxList={htxList} onPopupDetail={openDetail} />
+        )}
+
+        {showMarkers && !clusterMode && htxList.map((h) => (
+          <Marker key={h.id} position={[h.lat, h.lng]}
+            icon={makePinIcon(STATUS_COLORS[h.status_color] || STATUS_COLORS.gray)}>
             <Popup>
               <div className="min-w-[240px]" data-testid={`popup-${h.code}`}>
                 <div className="flex items-start gap-2">
@@ -175,6 +231,7 @@ export default function MapPage() {
                 </div>
                 <div className="mt-3 space-y-1 text-xs">
                   <div className="flex justify-between"><span className="text-slate-500">Chủ sở hữu</span><span className="font-medium">{h.owner_name}</span></div>
+                  {h.commune && <div className="flex justify-between"><span className="text-slate-500">Xã</span><span className="font-medium">{h.commune}</span></div>}
                   <div className="flex justify-between"><span className="text-slate-500">Diện tích</span><span className="font-medium">{h.cultivated_area_ha.toLocaleString("vi-VN")} ha</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Tổng máy</span><span className="font-medium">{h.machine_count} máy</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Hoạt động</span><span className="font-medium">{h.active_count}</span></div>
@@ -190,11 +247,8 @@ export default function MapPage() {
                     </div>
                   )}
                 </div>
-                <button
-                  data-testid={`btn-detail-${h.code}`}
-                  onClick={() => openDetail(h.id)}
-                  className="mt-3 w-full text-xs font-medium py-1.5 rounded bg-[#00A3E0] hover:bg-[#0089BE] text-white"
-                >
+                <button data-testid={`btn-detail-${h.code}`} onClick={() => openDetail(h.id)}
+                  className="mt-3 w-full text-xs font-medium py-1.5 rounded bg-[#00A3E0] hover:bg-[#0089BE] text-white">
                   Xem chi tiết HTX
                 </button>
               </div>
@@ -203,35 +257,40 @@ export default function MapPage() {
         ))}
       </MapContainer>
 
-      {/* Filter Panel - Glassmorphism */}
+      {/* Filter Panel */}
       <div className="absolute top-6 left-6 w-[300px] mkg-glass rounded-xl p-5 z-[1000]" data-testid="map-filter-panel">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="w-4 h-4 text-[#00A3E0]" />
           <h3 className="font-display font-bold text-sm uppercase tracking-wide">Bộ lọc bản đồ</h3>
         </div>
 
-        {/* Season pill switcher */}
         <div className="mb-3">
           <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1.5">
             <Calendar className="w-3 h-3" /> Mùa vụ
           </div>
           <div className="grid grid-cols-3 gap-1 bg-white/60 rounded-lg p-1 border border-slate-200/50" data-testid="season-switcher">
             {seasons.map((s) => (
-              <button
-                key={s.code}
-                data-testid={`season-${s.code}`}
+              <button key={s.code} data-testid={`season-${s.code}`}
                 onClick={() => setFilters({ ...filters, season: s.code })}
                 className={`text-[11px] font-medium py-1.5 rounded-md transition-colors ${
-                  filters.season === s.code
-                    ? "bg-[#00A82D] text-white shadow-sm"
-                    : "text-slate-600 hover:bg-white"
-                }`}
-              >
+                  filters.season === s.code ? "bg-[#00A82D] text-white shadow-sm" : "text-slate-600 hover:bg-white"
+                }`}>
                 {s.name}
               </button>
             ))}
           </div>
         </div>
+
+        {activeProvinceName && (
+          <div className="mb-3 flex items-center gap-2 bg-[#00A3E0]/10 border border-[#00A3E0]/30 rounded-md p-2 text-xs" data-testid="drilldown-badge">
+            <MapPin className="w-3.5 h-3.5 text-[#00A3E0]" />
+            <span className="font-semibold text-[#00A3E0]">{activeProvinceName}</span>
+            <span className="text-slate-500">· phân cụm theo xã</span>
+            <button onClick={() => setFilters({ ...filters, province: "ALL" })} className="ml-auto text-slate-500 hover:text-slate-800" data-testid="drilldown-clear">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
 
         <FilterSelect icon={MapPin} label="Địa bàn" testid="filter-province"
           value={filters.province} onChange={(v) => setFilters({ ...filters, province: v })}
@@ -243,19 +302,17 @@ export default function MapPage() {
           value={filters.status} onChange={(v) => setFilters({ ...filters, status: v })}
           options={[["ALL", "Tất cả"], ["hoat_dong", "Hoạt động"], ["bao_tri", "Bảo trì"], ["hong", "Hỏng"]]} />
 
-        {/* Layer toggles */}
         <div className="mt-4 pt-3 border-t border-slate-200/60">
           <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Lớp bản đồ</div>
-          <LayerToggle
-            icon={Waypoints} testid="toggle-boundaries" label="Ranh giới 6 tỉnh"
+          <LayerToggle icon={Waypoints} testid="toggle-boundaries" label="Ranh giới 6 tỉnh"
             active={layers.boundaries}
-            onToggle={() => setLayers({ ...layers, boundaries: !layers.boundaries })}
-          />
-          <LayerToggle
-            icon={Flame} testid="toggle-heatmap" label="Mật độ HP / ha"
+            onToggle={() => setLayers({ ...layers, boundaries: !layers.boundaries })} />
+          <LayerToggle icon={Flame} testid="toggle-heatmap" label="Mật độ HP / ha"
             active={layers.heatmap}
-            onToggle={() => setLayers({ ...layers, heatmap: !layers.heatmap })}
-          />
+            onToggle={() => setLayers({ ...layers, heatmap: !layers.heatmap })} />
+          <LayerToggle icon={Layers} testid="toggle-cluster" label="Gom cụm theo Xã"
+            active={clusterMode}
+            onToggle={() => setLayers({ ...layers, cluster: !layers.cluster })} />
         </div>
 
         <div className="mt-3 pt-3 border-t border-slate-200/60">
@@ -278,10 +335,13 @@ export default function MapPage() {
             </div>
           )}
         </div>
+        {filters.province === "ALL" && !layers.heatmap && (
+          <div className="mt-3 text-[10px] text-slate-500 italic">Mẹo: bấm vào 1 tỉnh trên bản đồ để phân cụm theo Xã.</div>
+        )}
       </div>
 
-      {/* Bottom overview table */}
-      {!layers.heatmap && (
+      {/* Bottom panel: switches between HTX list & Xã list */}
+      {!layers.heatmap && filters.province === "ALL" && (
         <div className="absolute bottom-6 right-6 w-[380px] max-h-[45vh] mkg-glass rounded-xl overflow-hidden z-[1000]" data-testid="map-status-table">
           <div className="px-4 py-3 border-b border-white/40 flex items-center gap-2">
             <Layers className="w-4 h-4 text-[#00A82D]" />
@@ -319,7 +379,42 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Detail modal */}
+      {/* Commune drilldown list */}
+      {!layers.heatmap && byCommune && (
+        <div className="absolute bottom-6 right-6 w-[380px] max-h-[55vh] mkg-glass rounded-xl overflow-hidden z-[1000]" data-testid="commune-panel">
+          <div className="px-4 py-3 border-b border-white/40 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#00A3E0]" />
+            <div className="font-display font-bold text-sm uppercase tracking-wide">HTX theo Xã · {activeProvinceName}</div>
+            <div className="ml-auto text-[10px] text-slate-500">{Object.keys(byCommune).length} xã</div>
+          </div>
+          <div className="overflow-y-auto max-h-[calc(55vh-2.5rem)] p-3 space-y-3">
+            {Object.entries(byCommune).map(([commune, list]) => (
+              <div key={commune} data-testid={`commune-${commune.replace(/\s+/g, "_")}`}>
+                <div className="text-[11px] uppercase font-semibold text-slate-600 tracking-wide flex items-center gap-1.5 mb-1">
+                  <MapPin className="w-3 h-3 text-[#00A82D]" /> {commune}
+                  <span className="text-slate-400 font-normal ml-auto">{list.length} HTX</span>
+                </div>
+                <div className="space-y-1">
+                  {list.map((h) => (
+                    <button key={h.id} onClick={() => openDetail(h.id)}
+                      className="w-full flex items-center gap-2 text-left px-2 py-1.5 rounded hover:bg-white/70 border border-transparent hover:border-slate-200 transition-colors">
+                      <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[h.status_color] }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate">{h.name}</div>
+                        <div className="text-[10px] text-slate-500">{h.code} · {h.machine_count} máy</div>
+                      </div>
+                      <span className="text-[10px] font-semibold" style={{ color: STATUS_COLORS[h.status_color] }}>
+                        {h.coverage_ratio == null ? "—" : `${(h.coverage_ratio * 100).toFixed(0)}%`}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {selectedDetail && (
         <div className="fixed inset-0 bg-black/40 z-[2000] flex items-center justify-center p-6"
           onClick={() => setSelectedDetail(null)} data-testid="htx-detail-modal">
@@ -327,7 +422,7 @@ export default function MapPage() {
             onClick={(e) => e.stopPropagation()}>
             <div className="p-5 bg-gradient-to-r from-[#00A3E0] to-[#00C4B4] text-white">
               <div className="font-display font-bold text-xl">{selectedDetail.htx.name}</div>
-              <div className="text-white/85 text-xs">{selectedDetail.htx.code} · {selectedDetail.htx.owner_name}</div>
+              <div className="text-white/85 text-xs">{selectedDetail.htx.code} · {selectedDetail.htx.owner_name}{selectedDetail.htx.commune ? ` · ${selectedDetail.htx.commune}` : ""}</div>
             </div>
             <div className="p-5 overflow-y-auto max-h-[calc(85vh-6rem)]">
               <div className="grid grid-cols-2 gap-3 mb-4">
@@ -393,15 +488,10 @@ function FilterSelect({ icon: Icon, label, value, onChange, options, testid }) {
 
 function LayerToggle({ icon: Icon, label, active, onToggle, testid }) {
   return (
-    <button
-      data-testid={testid}
-      onClick={onToggle}
+    <button data-testid={testid} onClick={onToggle}
       className={`w-full flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md mb-1.5 transition-colors border ${
-        active
-          ? "bg-[#00A3E0]/10 border-[#00A3E0]/30 text-[#00A3E0]"
-          : "bg-white/50 border-slate-200 text-slate-600 hover:bg-white"
-      }`}
-    >
+        active ? "bg-[#00A3E0]/10 border-[#00A3E0]/30 text-[#00A3E0]" : "bg-white/50 border-slate-200 text-slate-600 hover:bg-white"
+      }`}>
       <Icon className="w-3.5 h-3.5" />
       <span className="flex-1 text-left">{label}</span>
       <span className={`w-8 h-4 rounded-full relative transition-colors ${active ? "bg-[#00A3E0]" : "bg-slate-300"}`}>

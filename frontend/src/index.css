@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap");
 @import url("https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap");
 @import url("https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css");
+@import url("https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
+@import url("https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
 
 @tailwind base;
 @tailwind components;
@@ -137,6 +139,41 @@ h6,
 }
 .mkg-boundary-tip::before {
     display: none !important;
+}
+
+/* Marker cluster styling with MekongGreen palette */
+.marker-cluster-small,
+.marker-cluster-small div {
+    background-color: rgba(0, 196, 180, 0.5) !important;
+}
+.marker-cluster-small div {
+    background-color: rgba(0, 196, 180, 0.85) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-family: "Cabinet Grotesk", "IBM Plex Sans", sans-serif !important;
+}
+.marker-cluster-medium,
+.marker-cluster-medium div {
+    background-color: rgba(0, 163, 224, 0.55) !important;
+}
+.marker-cluster-medium div {
+    background-color: rgba(0, 163, 224, 0.9) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-family: "Cabinet Grotesk", "IBM Plex Sans", sans-serif !important;
+}
+.marker-cluster-large,
+.marker-cluster-large div {
+    background-color: rgba(0, 168, 45, 0.55) !important;
+}
+.marker-cluster-large div {
+    background-color: rgba(0, 168, 45, 0.92) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-family: "Cabinet Grotesk", "IBM Plex Sans", sans-serif !important;
+}
+.mkg-province-hover {
+    cursor: pointer;
 }
 
 /* Sidenav highlight */

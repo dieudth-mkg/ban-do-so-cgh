@@ -11,6 +11,8 @@ from typing import Optional, List
 from io import BytesIO
 from datetime import datetime, timezone
 from openpyxl import load_workbook, Workbook
+import httpx
+import random
 
 from models import (
     UserCreate, LoginRequest, ChangePasswordRequest,
@@ -754,34 +756,74 @@ async def report_summary_by_region(user=Depends(get_current_user)):
 async def export_report(
     kind: str = Query(..., pattern="^(summary_by_region|supply_demand|htx_shortage)$"),
     fmt: str = Query(..., pattern="^(xlsx|pdf)$"),
+    season: Optional[str] = Query("DX"),
+    province: Optional[str] = Query(None),
+    category: Optional[str] = Query(None),
     user=Depends(get_current_user),
 ):
+    # Build filter suffix
+    season_names = {s["code"]: s["name"] for s in SEASONS}
+    prov_names = {p["code"]: p["name"] for p in PROVINCES}
+    cat_names = {c["code"]: c["name"] for c in MACHINE_CATEGORIES}
+    filter_parts = []
+    if season and season != "ALL":
+        filter_parts.append(f"Mùa vụ: {season_names.get(season, season)}")
+    if province and province != "ALL":
+        filter_parts.append(f"Tỉnh: {prov_names.get(province, province)}")
+    if category and category != "ALL":
+        filter_parts.append(f"Chủng loại: {cat_names.get(category, category)}")
+    filter_suffix = " · ".join(filter_parts) if filter_parts else "Toàn bộ dữ liệu"
+
     if kind == "summary_by_region":
-        rows_data = await report_summary_by_region(user=user)
+        # summary by region: optionally filter by province & category
+        provinces_docs = await db.provinces.find({}, {"_id": 0}).to_list(50)
+        if province and province != "ALL":
+            provinces_docs = [p for p in provinces_docs if p["code"] == province]
+        htx_docs = await db.htx.find({}, {"_id": 0}).to_list(2000)
+        m_query = {}
+        if category and category != "ALL":
+            m_query["category_code"] = category
+        machines = await db.machines.find(m_query, {"_id": 0}).to_list(20000)
+        rows_data = []
+        for p in provinces_docs:
+            p_htx = [h for h in htx_docs if h["province_code"] == p["code"]]
+            htx_ids = [h["id"] for h in p_htx]
+            p_machines = [m for m in machines if m["htx_id"] in htx_ids]
+            active = [m for m in p_machines if m["status"] == "hoat_dong"]
+            area = sum(h["cultivated_area_ha"] for h in p_htx)
+            rows_data.append({
+                "province": p["name"],
+                "htx_count": len(p_htx),
+                "machine_count": len(p_machines),
+                "active_count": len(active),
+                "area_ha": round(area, 1),
+            })
         headers = ["Tỉnh", "Số HTX", "Tổng số máy", "Máy hoạt động", "Diện tích (ha)"]
         rows = [[r["province"], r["htx_count"], r["machine_count"], r["active_count"], r["area_ha"]] for r in rows_data]
-        title = "Báo cáo Tổng hợp theo Khu vực"
+        title = f"Báo cáo Tổng hợp theo Khu vực — {filter_suffix}"
     elif kind == "supply_demand":
-        sd = await supply_demand(user=user)
+        sd = await supply_demand(province=province, season=season, user=user)
+        rows_all = sd["rows"]
+        if category and category != "ALL":
+            rows_all = [r for r in rows_all if r["category_code"] == category]
         headers = ["Tỉnh", "Khâu", "Chủng loại máy", "Diện tích (ha)", "Nhu cầu", "Sẵn có", "Chênh lệch", "Trạng thái"]
         stage_names = {s["code"]: s["name"] for s in STAGES}
         rows = [[
             r["province_name"], stage_names.get(r["stage"], r["stage"]),
             r["category_name"], r["cultivated_area_ha"], r["needed"],
             r["have"], r["diff"], r["label"]
-        ] for r in sd["rows"]]
-        title = "Báo cáo Cân đối Cung – Cầu Máy móc"
+        ] for r in rows_all]
+        title = f"Báo cáo Cân đối Cung – Cầu Máy móc — {filter_suffix}"
     else:  # htx_shortage
-        summary = await map_htx_summary(user=user)
+        summary = await map_htx_summary(province=province, category=category, season=season, user=user)
         shortages = [h for h in summary if h["status_color"] in ("red", "amber")]
         headers = ["Mã HTX", "Tên HTX", "Tỉnh", "Chủ sở hữu", "Diện tích", "Tổng máy", "Tỷ lệ đáp ứng", "Trạng thái"]
-        prov_names = {p["code"]: p["name"] for p in PROVINCES}
         rows = [[
             h["code"], h["name"], prov_names.get(h["province_code"], h["province_code"]),
             h["owner_name"], h["cultivated_area_ha"], h["machine_count"],
             f"{(h['coverage_ratio'] or 0) * 100:.1f}%", h["status_label"],
         ] for h in shortages]
-        title = "Báo cáo HTX Thừa/Thiếu Máy móc"
+        title = f"Báo cáo HTX Thừa/Thiếu Máy móc — {filter_suffix}"
 
     if fmt == "xlsx":
         data = build_excel(title, headers, rows)
@@ -829,7 +871,48 @@ async def update_user(email: str, body: dict, user=Depends(require_admin)):
     return {"ok": True}
 
 
-# ============ SYNC LOGS (MOCK) ============
+# ============ SYNC LOGS - REAL HTTP INTEGRATION ============
+DEFAULT_SYNC_URL = None  # resolved at runtime to internal mock endpoint
+
+async def _get_sync_url() -> str:
+    """Return configured HTX sync URL, or fall back to internal mock endpoint."""
+    doc = await db.system_settings.find_one({"key": "htx_sync_url"}, {"_id": 0})
+    if doc and doc.get("value"):
+        return doc["value"]
+    # Default to internal mock endpoint (self-reference)
+    port = os.environ.get("BACKEND_INTERNAL_PORT", "8001")
+    return f"http://localhost:{port}/api/mock-htx-app/machine-updates"
+
+
+@api.get("/mock-htx-app/machine-updates")
+async def mock_htx_app_machine_updates():
+    """Synthetic external HTX-app endpoint. Returns machine status updates.
+    In production this URL is replaced by the real HTX cooperative app.
+    """
+    # Sample 40-80 random machines and produce status changes
+    machines = await db.machines.aggregate([{"$sample": {"size": random.randint(40, 80)}}]).to_list(200)
+    updates = []
+    for m in machines:
+        new_status = random.choices(
+            ["hoat_dong", "bao_tri", "hong"],
+            weights=[80, 15, 5], k=1
+        )[0]
+        note = ""
+        if new_status == "bao_tri":
+            note = random.choice(["Bảo trì định kỳ", "Thay dầu & lọc", "Kiểm tra hộp số"])
+        elif new_status == "hong":
+            note = random.choice(["Hỏng động cơ", "Hư hệ thống điện", "Chờ phụ tùng"])
+        updates.append({
+            "htx_id": m["htx_id"],
+            "category_code": m["category_code"],
+            "serial_no": m["serial_no"],
+            "status": new_status,
+            "condition_notes": note,
+            "reported_at": datetime.now(timezone.utc).isoformat(),
+        })
+    return {"source": "HTX_APP_MOCK", "count": len(updates), "updates": updates}
+
+
 @api.get("/admin/sync-logs")
 async def sync_logs(user=Depends(require_admin)):
     return await db.sync_logs.find({}, {"_id": 0}).sort("started_at", -1).to_list(100)
@@ -837,20 +920,234 @@ async def sync_logs(user=Depends(require_admin)):
 
 @api.post("/admin/sync-logs/trigger")
 async def trigger_sync(user=Depends(require_admin)):
-    import random
-    from datetime import datetime, timezone
-    now = datetime.now(timezone.utc).isoformat()
+    """Real HTTP integration: fetches machine status updates from configured
+    HTX App endpoint and applies them to the local DB."""
+    started_at = datetime.now(timezone.utc)
+    started_iso = started_at.isoformat()
+    sync_url = await _get_sync_url()
+    updated = notfound = 0
+    status = "success"
+    err_msg = ""
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as http:
+            resp = await http.get(sync_url)
+            resp.raise_for_status()
+            payload = resp.json()
+            updates = payload.get("updates", [])
+            for u in updates:
+                q = {
+                    "htx_id": u.get("htx_id"),
+                    "category_code": u.get("category_code"),
+                    "serial_no": u.get("serial_no"),
+                }
+                r = await db.machines.update_one(q, {"$set": {
+                    "status": u.get("status", "hoat_dong"),
+                    "condition_notes": u.get("condition_notes", ""),
+                }})
+                if r.matched_count > 0:
+                    updated += 1
+                else:
+                    notfound += 1
+            records = len(updates)
+    except Exception as e:
+        status = "failed"
+        err_msg = str(e)[:250]
+        records = 0
+
+    finished_at = datetime.now(timezone.utc)
+    latency_ms = int((finished_at - started_at).total_seconds() * 1000)
     entry = {
-        "id": f"sync-{int(datetime.now(timezone.utc).timestamp())}",
+        "id": f"sync-{int(started_at.timestamp())}",
         "source": "HTX_APP",
-        "status": random.choice(["success", "success", "success", "failed"]),
-        "records_processed": random.randint(500, 12000),
-        "message": "Đồng bộ thủ công (Mock)",
-        "started_at": now,
-        "finished_at": now,
+        "source_url": sync_url,
+        "status": status,
+        "records_processed": records,
+        "updated_count": updated,
+        "notfound_count": notfound,
+        "latency_ms": latency_ms,
+        "message": err_msg or f"Cập nhật {updated} máy · Không tìm thấy {notfound}",
+        "started_at": started_iso,
+        "finished_at": finished_at.isoformat(),
     }
     await db.sync_logs.insert_one(dict(entry))
+    await db.system_logs.insert_one({
+        "id": f"log-{finished_at.timestamp()}",
+        "actor_email": user["email"],
+        "action": "TRIGGER_SYNC",
+        "detail": f"url={sync_url}, updated={updated}, notfound={notfound}",
+        "ts": finished_iso if (finished_iso := finished_at.isoformat()) else "",
+    })
     return {k: v for k, v in entry.items() if k != "_id"}
+
+
+@api.get("/admin/settings")
+async def get_settings(user=Depends(require_admin)):
+    """Fetch mutable system settings (currently only htx_sync_url)."""
+    doc = await db.system_settings.find_one({"key": "htx_sync_url"}, {"_id": 0})
+    default_url = await _get_sync_url()
+    return {
+        "htx_sync_url": (doc or {}).get("value", ""),
+        "default_htx_sync_url": default_url,
+    }
+
+
+@api.patch("/admin/settings")
+async def update_settings(body: dict, user=Depends(require_admin)):
+    if "htx_sync_url" in body:
+        url = (body["htx_sync_url"] or "").strip()
+        await db.system_settings.update_one(
+            {"key": "htx_sync_url"},
+            {"$set": {"key": "htx_sync_url", "value": url}},
+            upsert=True,
+        )
+    return {"ok": True}
+
+
+# ============ MACHINES EXCEL IMPORT ============
+MACHINE_IMPORT_COLUMNS = [
+    "htx_code", "category_code", "serial_no",
+    "horsepower", "status", "condition_notes",
+]
+_ALLOWED_MACHINE_STATUS = {"hoat_dong", "bao_tri", "hong"}
+
+
+@api.get("/machines/import-template")
+async def machines_import_template(user=Depends(require_admin)):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Machines_Template"
+    ws.append(MACHINE_IMPORT_COLUMNS)
+    ws.append(["CT-HTX01", "MC01", "SAMPLE-CAY-001", 90, "hoat_dong", ""])
+    ws.append(["CT-HTX01", "MC04", "SAMPLE-GAT-002", 120, "bao_tri", "Thay dầu định kỳ"])
+    for col in ws.columns:
+        max_len = max(len(str(c.value or "")) for c in col)
+        ws.column_dimensions[col[0].column_letter].width = max(14, max_len + 2)
+    bio = BytesIO(); wb.save(bio)
+    return StreamingResponse(
+        BytesIO(bio.getvalue()),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="machines-import-template.xlsx"'},
+    )
+
+
+@api.post("/machines/import-excel")
+async def import_machines_excel(
+    file: UploadFile = File(...),
+    dry_run: bool = Query(False),
+    user=Depends(require_admin),
+):
+    if not file.filename or not file.filename.lower().endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="Chỉ chấp nhận tệp .xlsx")
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Tệp vượt quá 10MB")
+    try:
+        wb = load_workbook(BytesIO(content), data_only=True)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Không đọc được tệp Excel: {e}")
+    ws = wb.active
+    rows = list(ws.iter_rows(values_only=True))
+    if len(rows) < 2:
+        raise HTTPException(status_code=400, detail="Tệp trống hoặc chỉ có tiêu đề")
+    header = [str(c).strip() if c is not None else "" for c in rows[0]]
+    col_idx = {name: (header.index(name) if name in header else -1) for name in MACHINE_IMPORT_COLUMNS}
+    missing = [k for k, v in col_idx.items() if v == -1 and k in ("htx_code", "category_code", "serial_no")]
+    if missing:
+        raise HTTPException(status_code=400, detail=f"Thiếu cột bắt buộc: {', '.join(missing)}")
+
+    htx_map = {h["code"]: h for h in await db.htx.find({}, {"_id": 0}).to_list(2000)}
+    cat_codes = {c["code"] for c in await db.machine_categories.find({}, {"_id": 0}).to_list(50)}
+    ok_rows, error_rows, skipped_rows = [], [], []
+
+    for r_i, r in enumerate(rows[1:], start=2):
+        if all(c is None or str(c).strip() == "" for c in r):
+            continue
+        rec = {k: (r[idx] if 0 <= idx < len(r) else None) for k, idx in col_idx.items()}
+        errors = []
+        htx_code = str(rec.get("htx_code") or "").strip()
+        cat_code = str(rec.get("category_code") or "").strip()
+        serial_no = str(rec.get("serial_no") or "").strip()
+
+        if not htx_code:
+            errors.append("Thiếu htx_code")
+        elif htx_code not in htx_map:
+            errors.append(f"htx_code không tồn tại")
+        if not cat_code:
+            errors.append("Thiếu category_code")
+        elif cat_code not in cat_codes:
+            errors.append(f"category_code không hợp lệ")
+        if not serial_no:
+            errors.append("Thiếu serial_no")
+
+        try:
+            hp = float(rec.get("horsepower") or 0)
+            rec["horsepower"] = hp
+        except (TypeError, ValueError):
+            errors.append("horsepower phải là số"); hp = 0
+        status_v = str(rec.get("status") or "hoat_dong").strip()
+        if status_v not in _ALLOWED_MACHINE_STATUS:
+            errors.append(f"status không hợp lệ ({', '.join(sorted(_ALLOWED_MACHINE_STATUS))})")
+        notes = str(rec.get("condition_notes") or "").strip()
+
+        # Duplicate check: (owner + category + serial)
+        if not errors:
+            owner = htx_map[htx_code]["owner_name"]
+            dup = await db.machines.find_one({
+                "owner_name": owner, "category_code": cat_code, "serial_no": serial_no,
+            })
+            if dup:
+                skipped_rows.append({"row": r_i, "serial_no": serial_no, "reason": "Đã tồn tại"})
+                continue
+
+        if errors:
+            error_rows.append({"row": r_i, "serial_no": serial_no, "errors": errors})
+        else:
+            ok_rows.append({
+                "row": r_i, "htx_code": htx_code, "category_code": cat_code,
+                "serial_no": serial_no, "horsepower": hp, "status": status_v,
+                "condition_notes": notes,
+            })
+
+    inserted = 0
+    if not dry_run and ok_rows:
+        docs = []
+        for rec in ok_rows:
+            htx = htx_map[rec["htx_code"]]
+            docs.append({
+                "id": f"{rec['htx_code']}-{rec['category_code']}-{rec['serial_no']}",
+                "htx_id": htx["id"],
+                "owner_name": htx["owner_name"],
+                "category_code": rec["category_code"],
+                "serial_no": rec["serial_no"],
+                "horsepower": rec["horsepower"],
+                "status": rec["status"],
+                "condition_notes": rec["condition_notes"],
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+        if docs:
+            await db.machines.insert_many(docs)
+            inserted = len(docs)
+        await db.system_logs.insert_one({
+            "id": f"log-{datetime.now(timezone.utc).timestamp()}",
+            "actor_email": user["email"],
+            "action": "IMPORT_MACHINES_EXCEL",
+            "detail": f"file={file.filename}, inserted={inserted}, errors={len(error_rows)}",
+            "ts": datetime.now(timezone.utc).isoformat(),
+        })
+
+    return {
+        "filename": file.filename,
+        "total_rows": len(rows) - 1,
+        "ok_count": len(ok_rows),
+        "error_count": len(error_rows),
+        "skipped_count": len(skipped_rows),
+        "inserted": inserted,
+        "dry_run": dry_run,
+        "errors": error_rows[:200],
+        "skipped": skipped_rows[:200],
+        "ok_preview": ok_rows[:20],
+    }
 
 
 # ============ SYSTEM LOGS ============

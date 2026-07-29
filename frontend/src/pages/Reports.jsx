@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { api, API } from "../lib/api";
-import { FileSpreadsheet, FileText, BarChart3, Layers, AlertTriangle, Download } from "lucide-react";
+import {
+  FileSpreadsheet, FileText, BarChart3, Layers, AlertTriangle, Download,
+  Filter, Calendar, MapPin, Tractor,
+} from "lucide-react";
 import { toast, Toaster } from "sonner";
 
 const REPORTS = [
@@ -9,47 +12,77 @@ const REPORTS = [
     icon: Layers,
     color: "#00A3E0",
     title: "Báo cáo Tổng hợp theo Khu vực",
-    desc: "Số HTX, số máy và diện tích cơ giới hóa theo từng tỉnh trong vùng ĐBSCL.",
+    desc: "Số HTX, số máy và diện tích cơ giới hóa theo từng tỉnh.",
+    uses: ["province", "category"],
   },
   {
     kind: "supply_demand",
     icon: BarChart3,
     color: "#00A82D",
     title: "Báo cáo Cân đối Cung – Cầu",
-    desc: "Bảng chi tiết nhu cầu và cung ứng máy móc theo khâu sản xuất và tỉnh.",
+    desc: "Bảng chi tiết nhu cầu và cung ứng máy móc theo khâu sản xuất.",
+    uses: ["season", "province", "category"],
   },
   {
     kind: "htx_shortage",
     icon: AlertTriangle,
     color: "#E74C3C",
     title: "Báo cáo HTX Thừa/Thiếu",
-    desc: "Danh sách các HTX đang thiếu máy nghiêm trọng cần ưu tiên can thiệp.",
+    desc: "Danh sách các HTX đang thiếu máy cần ưu tiên can thiệp.",
+    uses: ["season", "province", "category"],
   },
 ];
 
 export default function Reports() {
   const [preview, setPreview] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [provinces, setProvinces] = useState([]);
+  const [seasons, setSeasons] = useState([]);
+  const [cats, setCats] = useState([]);
+  const [filters, setFilters] = useState({ season: "DX", province: "ALL", category: "ALL" });
 
   useEffect(() => {
-    api.get("/reports/summary-by-region").then((r) => {
-      setPreview(r.data);
-      setLoading(false);
+    Promise.all([
+      api.get("/provinces"),
+      api.get("/seasons"),
+      api.get("/machine-categories"),
+    ]).then(([p, s, c]) => {
+      setProvinces(p.data); setSeasons(s.data); setCats(c.data);
     });
   }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    api.get("/reports/summary-by-region").then((r) => {
+      setPreview(r.data); setLoading(false);
+    });
+  }, []);
+
+  const buildQS = (kind) => {
+    const rep = REPORTS.find((x) => x.kind === kind);
+    const params = new URLSearchParams({ kind, fmt: "xlsx" });
+    if (rep.uses.includes("season") && filters.season) params.set("season", filters.season);
+    if (rep.uses.includes("province") && filters.province) params.set("province", filters.province);
+    if (rep.uses.includes("category") && filters.category) params.set("category", filters.category);
+    return params;
+  };
 
   const download = async (kind, fmt) => {
     try {
       const token = localStorage.getItem("mkg_token");
-      const resp = await fetch(`${API}/reports/export?kind=${kind}&fmt=${fmt}`, {
+      const params = buildQS(kind);
+      params.set("fmt", fmt);
+      const resp = await fetch(`${API}/reports/export?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!resp.ok) throw new Error("Xuất báo cáo thất bại");
       const blob = await resp.blob();
       const url = window.URL.createObjectURL(blob);
+      const suffix = [filters.season, filters.province, filters.category]
+        .filter((x) => x && x !== "ALL").join("-");
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${kind}.${fmt}`;
+      a.download = suffix ? `${kind}-${suffix}.${fmt}` : `${kind}.${fmt}`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success(`Đã tải ${fmt.toUpperCase()}`);
@@ -58,12 +91,86 @@ export default function Reports() {
     }
   };
 
+  const currentFilterLabel = () => {
+    const parts = [];
+    if (filters.season && filters.season !== "ALL") {
+      parts.push(seasons.find((s) => s.code === filters.season)?.name || filters.season);
+    }
+    if (filters.province !== "ALL") {
+      parts.push(provinces.find((p) => p.code === filters.province)?.name || filters.province);
+    }
+    if (filters.category !== "ALL") {
+      parts.push(cats.find((c) => c.code === filters.category)?.name || filters.category);
+    }
+    return parts.length ? parts.join(" · ") : "Toàn bộ dữ liệu";
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6" data-testid="reports-page">
       <Toaster position="top-right" richColors />
       <div>
         <h1 className="font-display font-bold text-3xl text-slate-900">Báo cáo & Kết xuất Dữ liệu</h1>
         <p className="text-sm text-slate-500 mt-1">Trung tâm xuất báo cáo phục vụ công tác chỉ đạo & chính sách</p>
+      </div>
+
+      {/* Filter panel */}
+      <div className="bg-white border border-slate-200 rounded-lg p-4" data-testid="reports-filter">
+        <div className="flex items-center gap-2 mb-3">
+          <Filter className="w-4 h-4 text-[#00A3E0]" />
+          <h3 className="font-display font-bold text-sm uppercase tracking-wide">Bộ lọc áp dụng cho tệp xuất</h3>
+          <span className="ml-auto text-xs px-3 py-1 rounded-full bg-[#00A82D]/10 text-[#00A82D] font-medium">
+            {currentFilterLabel()}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1">
+              <Calendar className="w-3 h-3" /> Mùa vụ
+            </div>
+            <div className="grid grid-cols-3 gap-1 border border-slate-200 rounded-md p-1" data-testid="report-season-switcher">
+              {seasons.map((s) => (
+                <button
+                  key={s.code}
+                  data-testid={`report-season-${s.code}`}
+                  onClick={() => setFilters({ ...filters, season: s.code })}
+                  className={`text-xs font-medium py-1.5 rounded transition-colors ${
+                    filters.season === s.code ? "bg-[#00A82D] text-white" : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1">
+              <MapPin className="w-3 h-3" /> Tỉnh
+            </div>
+            <select
+              data-testid="report-province"
+              value={filters.province}
+              onChange={(e) => setFilters({ ...filters, province: e.target.value })}
+              className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"
+            >
+              <option value="ALL">Toàn vùng</option>
+              {provinces.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1">
+              <Tractor className="w-3 h-3" /> Chủng loại máy
+            </div>
+            <select
+              data-testid="report-category"
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              className="w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"
+            >
+              <option value="ALL">Tất cả chủng loại</option>
+              {cats.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </select>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -75,7 +182,11 @@ export default function Reports() {
               </div>
               <h3 className="font-display font-bold text-base">{r.title}</h3>
             </div>
-            <p className="text-sm text-slate-600 mb-4 flex-1">{r.desc}</p>
+            <p className="text-sm text-slate-600 mb-3 flex-1">{r.desc}</p>
+            <div className="text-[11px] text-slate-500 mb-3 border-t border-slate-100 pt-2">
+              <span className="font-semibold text-slate-600 uppercase tracking-wider">Áp dụng: </span>
+              {r.uses.map((u) => u === "season" ? "Mùa vụ" : u === "province" ? "Tỉnh" : "Chủng loại").join(" · ")}
+            </div>
             <div className="flex gap-2">
               <button
                 data-testid={`export-xlsx-${r.kind}`}

@@ -278,30 +278,75 @@ function ThresholdsTab() {
 
 function SyncTab() {
   const [logs, setLogs] = useState([]);
-  const load = () => api.get("/admin/sync-logs").then((r) => setLogs(r.data));
+  const [settings, setSettings] = useState({ htx_sync_url: "", default_htx_sync_url: "" });
+  const [urlDraft, setUrlDraft] = useState("");
+  const load = () => Promise.all([
+    api.get("/admin/sync-logs"),
+    api.get("/admin/settings"),
+  ]).then(([l, s]) => {
+    setLogs(l.data);
+    setSettings(s.data);
+    setUrlDraft(s.data.htx_sync_url || "");
+  });
   useEffect(() => { load(); }, []);
   const trigger = async () => {
-    await api.post("/admin/sync-logs/trigger");
-    toast.success("Đã kích hoạt đồng bộ (Mock)");
+    toast.info("Đang gọi API Ứng dụng HTX…");
+    const { data } = await api.post("/admin/sync-logs/trigger");
+    if (data.status === "success") {
+      toast.success(`Đồng bộ thành công · Cập nhật ${data.updated_count}/${data.records_processed} máy (${data.latency_ms}ms)`);
+    } else {
+      toast.error(`Đồng bộ lỗi: ${data.message}`);
+    }
+    load();
+  };
+  const saveUrl = async () => {
+    await api.patch("/admin/settings", { htx_sync_url: urlDraft.trim() });
+    toast.success("Đã cập nhật cấu hình URL đồng bộ");
     load();
   };
   return (
     <div className="mt-4 space-y-4">
+      <div className="bg-white border border-slate-200 rounded-lg p-4" data-testid="sync-config">
+        <div className="flex items-center gap-2 mb-3">
+          <Sliders className="w-4 h-4 text-[#00A3E0]" />
+          <div className="font-display font-bold text-sm uppercase tracking-wide">Cấu hình API Ứng dụng HTX</div>
+        </div>
+        <div className="text-xs text-slate-600 mb-2">
+          URL endpoint đồng bộ (để trống → dùng mặc định: <code className="text-[11px] bg-slate-100 px-1 rounded font-mono">{settings.default_htx_sync_url}</code>)
+        </div>
+        <div className="flex gap-2">
+          <input
+            data-testid="sync-url-input"
+            type="text"
+            value={urlDraft}
+            onChange={(e) => setUrlDraft(e.target.value)}
+            placeholder="https://api.htx-app.vn/machine-updates"
+            className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#00C4B4]"
+          />
+          <button onClick={saveUrl} data-testid="sync-url-save" className="px-4 py-2 rounded-md text-sm bg-[#00A3E0] text-white font-medium">
+            Lưu URL
+          </button>
+        </div>
+      </div>
+
       <div className="bg-white border border-slate-200 rounded-lg p-4 flex items-center gap-3">
         <RefreshCw className="w-4 h-4 text-[#00A3E0]" />
         <div className="flex-1">
-          <div className="font-display font-bold text-sm">Đồng bộ dữ liệu Ứng dụng HTX (Mock)</div>
-          <div className="text-xs text-slate-500">Đồng bộ tự động theo lịch. Có thể kích hoạt thủ công phục vụ kiểm thử.</div>
+          <div className="font-display font-bold text-sm">Đồng bộ dữ liệu Ứng dụng HTX</div>
+          <div className="text-xs text-slate-500">Gọi HTTP thực đến endpoint đã cấu hình. Cập nhật tình trạng máy trực tiếp vào DB.</div>
         </div>
-        <button onClick={trigger} data-testid="trigger-sync" className="px-4 py-2 rounded-md bg-[#00A3E0] text-white text-sm">Kích hoạt</button>
+        <button onClick={trigger} data-testid="trigger-sync" className="px-4 py-2 rounded-md bg-[#00A3E0] text-white text-sm">Kích hoạt đồng bộ</button>
       </div>
+
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
             <tr>
               <th className="text-left px-4 py-2.5">Thời gian</th>
-              <th className="text-left px-4 py-2.5">Nguồn</th>
-              <th className="text-right px-4 py-2.5">Bản ghi</th>
+              <th className="text-left px-4 py-2.5">Nguồn URL</th>
+              <th className="text-right px-4 py-2.5">Cập nhật</th>
+              <th className="text-right px-4 py-2.5">Không khớp</th>
+              <th className="text-right px-4 py-2.5">Độ trễ</th>
               <th className="text-left px-4 py-2.5">Trạng thái</th>
               <th className="text-left px-4 py-2.5">Ghi chú</th>
             </tr>
@@ -310,8 +355,12 @@ function SyncTab() {
             {logs.map((l) => (
               <tr key={l.id} className="border-t border-slate-100">
                 <td className="px-4 py-2.5 text-xs">{new Date(l.started_at).toLocaleString("vi-VN")}</td>
-                <td className="px-4 py-2.5">{l.source}</td>
-                <td className="px-4 py-2.5 text-right">{l.records_processed}</td>
+                <td className="px-4 py-2.5 font-mono text-[10px] text-slate-500 truncate max-w-[200px]" title={l.source_url || l.source}>
+                  {l.source_url ? (() => { try { const u = new URL(l.source_url); return u.host + u.pathname; } catch { return l.source_url; } })() : l.source}
+                </td>
+                <td className="px-4 py-2.5 text-right font-medium text-[#00A82D]">{l.updated_count ?? "—"}</td>
+                <td className="px-4 py-2.5 text-right text-slate-500">{l.notfound_count ?? "—"}</td>
+                <td className="px-4 py-2.5 text-right text-slate-500">{l.latency_ms ? `${l.latency_ms}ms` : "—"}</td>
                 <td className="px-4 py-2.5">
                   <span className={`text-xs px-2 py-0.5 rounded text-white ${l.status === "success" ? "bg-[#00A82D]" : "bg-[#E74C3C]"}`}>
                     {l.status === "success" ? "Thành công" : "Lỗi"}

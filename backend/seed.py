@@ -48,37 +48,38 @@ NORMS = [
 
 
 # 24 sample HTX distributed across 6 provinces
+# tuple: (code, name, owner, province_code, lat, lng, area_ha, commune_name)
 HTX_SAMPLES = [
     # Cần Thơ
-    ("CT-HTX01", "HTX Nông nghiệp Thới Lai", "Nguyễn Văn Bình", "CT", 10.10, 105.60, 1250),
-    ("CT-HTX02", "HTX Lúa Vàng Ô Môn", "Trần Thị Lan", "CT", 10.11, 105.63, 890),
-    ("CT-HTX03", "HTX Cờ Đỏ Xanh", "Lê Văn Minh", "CT", 9.98, 105.68, 1520),
-    ("CT-HTX04", "HTX Phong Điền", "Phạm Thị Hồng", "CT", 10.02, 105.75, 640),
+    ("CT-HTX01", "HTX Nông nghiệp Thới Lai", "Nguyễn Văn Bình", "CT", 10.10, 105.60, 1250, "Xã Thới Lai"),
+    ("CT-HTX02", "HTX Lúa Vàng Ô Môn", "Trần Thị Lan", "CT", 10.11, 105.63, 890, "Xã Thới Long"),
+    ("CT-HTX03", "HTX Cờ Đỏ Xanh", "Lê Văn Minh", "CT", 9.98, 105.68, 1520, "Xã Trung Hưng"),
+    ("CT-HTX04", "HTX Phong Điền", "Phạm Thị Hồng", "CT", 10.02, 105.75, 640, "Xã Nhơn Ái"),
     # An Giang
-    ("AG-HTX01", "HTX Long Xuyên Tiến", "Võ Văn Sáu", "AG", 10.50, 105.10, 2100),
-    ("AG-HTX02", "HTX Châu Thành Phát", "Nguyễn Thị Bảy", "AG", 10.45, 105.30, 1780),
-    ("AG-HTX03", "HTX Tri Tôn Xanh", "Trần Văn Tám", "AG", 10.40, 104.95, 950),
-    ("AG-HTX04", "HTX Tịnh Biên Nông", "Lê Thị Chín", "AG", 10.60, 105.00, 1450),
+    ("AG-HTX01", "HTX Long Xuyên Tiến", "Võ Văn Sáu", "AG", 10.50, 105.10, 2100, "Xã Mỹ Hòa Hưng"),
+    ("AG-HTX02", "HTX Châu Thành Phát", "Nguyễn Thị Bảy", "AG", 10.45, 105.30, 1780, "Xã Vĩnh Bình"),
+    ("AG-HTX03", "HTX Tri Tôn Xanh", "Trần Văn Tám", "AG", 10.40, 104.95, 950, "Xã Ba Chúc"),
+    ("AG-HTX04", "HTX Tịnh Biên Nông", "Lê Thị Chín", "AG", 10.60, 105.00, 1450, "Xã An Cư"),
     # Vĩnh Long
-    ("VL-HTX01", "HTX Tam Bình Mới", "Nguyễn Văn Đức", "VL", 10.06, 106.00, 780),
-    ("VL-HTX02", "HTX Bình Minh Xanh", "Phạm Văn Long", "VL", 10.03, 105.85, 1020),
-    ("VL-HTX03", "HTX Long Hồ Lúa", "Hoàng Thị Mai", "VL", 10.28, 105.98, 660),
-    ("VL-HTX04", "HTX Mang Thít Phú", "Vũ Văn Nam", "VL", 10.19, 106.10, 890),
+    ("VL-HTX01", "HTX Tam Bình Mới", "Nguyễn Văn Đức", "VL", 10.06, 106.00, 780, "Xã Tân Phú"),
+    ("VL-HTX02", "HTX Bình Minh Xanh", "Phạm Văn Long", "VL", 10.03, 105.85, 1020, "Xã Thuận An"),
+    ("VL-HTX03", "HTX Long Hồ Lúa", "Hoàng Thị Mai", "VL", 10.28, 105.98, 660, "Xã Phú Đức"),
+    ("VL-HTX04", "HTX Mang Thít Phú", "Vũ Văn Nam", "VL", 10.19, 106.10, 890, "Xã An Phước"),
     # Đồng Tháp
-    ("DT-HTX01", "HTX Tháp Mười Vàng", "Đỗ Văn Hùng", "DT", 10.55, 105.85, 1650),
-    ("DT-HTX02", "HTX Cao Lãnh Nông", "Bùi Thị Hà", "DT", 10.46, 105.63, 1230),
-    ("DT-HTX03", "HTX Sa Đéc Xanh", "Ngô Văn Kiên", "DT", 10.30, 105.75, 720),
-    ("DT-HTX04", "HTX Hồng Ngự Lúa", "Tô Thị Loan", "DT", 10.80, 105.36, 1400),
+    ("DT-HTX01", "HTX Tháp Mười Vàng", "Đỗ Văn Hùng", "DT", 10.55, 105.85, 1650, "Xã Mỹ An"),
+    ("DT-HTX02", "HTX Cao Lãnh Nông", "Bùi Thị Hà", "DT", 10.46, 105.63, 1230, "Xã Mỹ Long"),
+    ("DT-HTX03", "HTX Sa Đéc Xanh", "Ngô Văn Kiên", "DT", 10.30, 105.75, 720, "Xã Tân Khánh Đông"),
+    ("DT-HTX04", "HTX Hồng Ngự Lúa", "Tô Thị Loan", "DT", 10.80, 105.36, 1400, "Xã Thường Phước"),
     # Tây Ninh
-    ("TN-HTX01", "HTX Trảng Bàng Nông", "Lý Văn Phú", "TN", 11.03, 106.35, 850),
-    ("TN-HTX02", "HTX Gò Dầu Phát", "Đinh Thị Quỳnh", "TN", 11.10, 106.20, 620),
-    ("TN-HTX03", "HTX Tân Biên Xanh", "Chu Văn Rạng", "TN", 11.53, 106.03, 480),
-    ("TN-HTX04", "HTX Hòa Thành Mới", "Kiều Thị Sen", "TN", 11.28, 106.13, 730),
+    ("TN-HTX01", "HTX Trảng Bàng Nông", "Lý Văn Phú", "TN", 11.03, 106.35, 850, "Xã An Tịnh"),
+    ("TN-HTX02", "HTX Gò Dầu Phát", "Đinh Thị Quỳnh", "TN", 11.10, 106.20, 620, "Xã Phước Trạch"),
+    ("TN-HTX03", "HTX Tân Biên Xanh", "Chu Văn Rạng", "TN", 11.53, 106.03, 480, "Xã Tân Bình"),
+    ("TN-HTX04", "HTX Hòa Thành Mới", "Kiều Thị Sen", "TN", 11.28, 106.13, 730, "Xã Trường Đông"),
     # Cà Mau
-    ("CM-HTX01", "HTX U Minh Xanh", "Lâm Văn Tài", "CM", 9.42, 105.05, 1180),
-    ("CM-HTX02", "HTX Cái Nước Phát", "Trịnh Thị Uyên", "CM", 9.00, 105.03, 940),
-    ("CM-HTX03", "HTX Đầm Dơi Vàng", "Đặng Văn Việt", "CM", 8.98, 105.30, 1050),
-    ("CM-HTX04", "HTX Năm Căn Nông", "Mai Thị Xuân", "CM", 8.75, 105.05, 810),
+    ("CM-HTX01", "HTX U Minh Xanh", "Lâm Văn Tài", "CM", 9.42, 105.05, 1180, "Xã Khánh An"),
+    ("CM-HTX02", "HTX Cái Nước Phát", "Trịnh Thị Uyên", "CM", 9.00, 105.03, 940, "Xã Đông Hưng"),
+    ("CM-HTX03", "HTX Đầm Dơi Vàng", "Đặng Văn Việt", "CM", 8.98, 105.30, 1050, "Xã Tân Duyệt"),
+    ("CM-HTX04", "HTX Năm Căn Nông", "Mai Thị Xuân", "CM", 8.75, 105.05, 810, "Xã Hàm Rồng"),
 ]
 
 
@@ -139,7 +140,7 @@ async def seed_all(db):
     )
 
     # HTX
-    for code, name, owner, prov, lat, lng, area in HTX_SAMPLES:
+    for code, name, owner, prov, lat, lng, area, commune in HTX_SAMPLES:
         await db["htx"].update_one(
             {"code": code},
             {"$setOnInsert": {
@@ -150,7 +151,7 @@ async def seed_all(db):
                 "owner_type": "HTX",
                 "province_code": prov,
                 "district": "",
-                "commune": "",
+                "commune": commune,
                 "lat": lat,
                 "lng": lng,
                 "cultivated_area_ha": area,
@@ -160,6 +161,11 @@ async def seed_all(db):
             }},
             upsert=True,
         )
+        # Ensure commune is filled on existing docs (migration)
+        await db["htx"].update_one(
+            {"code": code, "$or": [{"commune": ""}, {"commune": {"$exists": False}}]},
+            {"$set": {"commune": commune}},
+        )
 
     # Machines - generate random count per HTX per category
     machines_col = db["machines"]
@@ -167,7 +173,7 @@ async def seed_all(db):
     if existing_count == 0:
         random.seed(42)
         machines = []
-        for code, name, owner, prov, lat, lng, area in HTX_SAMPLES:
+        for code, name, owner, prov, lat, lng, area, commune in HTX_SAMPLES:
             for cat in MACHINE_CATEGORIES:
                 # Random supply: sometimes short, sometimes sufficient
                 # Base need

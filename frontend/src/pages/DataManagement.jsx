@@ -103,7 +103,19 @@ function HTXTab() {
         </button>
       </div>
 
-      {importer && <ImportExcelModal onClose={() => setImporter(false)} onDone={() => { setImporter(false); load(); }} />}
+      {importer && (
+        <ImportModal
+          kind="htx"
+          title="Nhập danh bạ HTX từ Excel"
+          columnsHint="code, name, owner_name, province_code, district, commune, lat, lng, cultivated_area_ha, phone"
+          templateEndpoint="/htx/import-template"
+          importEndpoint="/htx/import-excel"
+          templateFilename="htx-import-template.xlsx"
+          entityLabel="HTX"
+          onClose={() => setImporter(false)}
+          onDone={() => { setImporter(false); load(); }}
+        />
+      )}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
@@ -182,6 +194,7 @@ function MachinesTab() {
   const [category, setCategory] = useState("ALL");
   const [status, setStatus] = useState("ALL");
   const [form, setForm] = useState(null);
+  const [importer, setImporter] = useState(false);
 
   const load = async () => {
     const { data } = await api.get("/machines", { params: { category: category === "ALL" ? undefined : category, status: status === "ALL" ? undefined : status } });
@@ -235,7 +248,28 @@ function MachinesTab() {
         >
           <PlusCircle className="w-4 h-4" /> Thêm máy
         </button>
+        <button
+          data-testid="machine-upload"
+          onClick={() => setImporter(true)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
+        >
+          <UploadCloud className="w-4 h-4" /> Tải Excel máy
+        </button>
       </div>
+
+      {importer && (
+        <ImportModal
+          kind="machines"
+          title="Nhập Máy móc từ Excel"
+          columnsHint="htx_code, category_code, serial_no, horsepower, status, condition_notes"
+          templateEndpoint="/machines/import-template"
+          importEndpoint="/machines/import-excel"
+          templateFilename="machines-import-template.xlsx"
+          entityLabel="máy"
+          onClose={() => setImporter(false)}
+          onDone={() => { setImporter(false); load(); }}
+        />
+      )}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
@@ -329,12 +363,11 @@ function SelectField({ label, value, onChange, options, disabled }) {
   );
 }
 
-function ImportExcelModal({ onClose, onDone }) {
+function ImportModal({ kind, title, columnsHint, templateEndpoint, importEndpoint, templateFilename, entityLabel, onClose, onDone }) {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [dryRun, setDryRun] = useState(true);
   const inputRef = useRef(null);
 
   const handleFile = (f) => {
@@ -357,14 +390,14 @@ function ImportExcelModal({ onClose, onDone }) {
     handleFile(e.dataTransfer.files?.[0]);
   };
 
-  const doUpload = async () => {
+  const doUpload = async (dryRun) => {
     if (!file) return;
     setBusy(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
       const token = localStorage.getItem("mkg_token");
-      const resp = await fetch(`${API}/htx/import-excel?dry_run=${dryRun}`, {
+      const resp = await fetch(`${API}${importEndpoint}?dry_run=${dryRun}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: fd,
@@ -373,7 +406,8 @@ function ImportExcelModal({ onClose, onDone }) {
       if (!resp.ok) throw new Error(data.detail || "Lỗi tải lên");
       setResult(data);
       if (!dryRun && data.inserted > 0) {
-        toast.success(`Đã nhập ${data.inserted} HTX mới`);
+        toast.success(`Đã nhập ${data.inserted} ${entityLabel} vào hệ thống`);
+        setTimeout(() => onDone(), 500);
       } else if (dryRun) {
         toast.info(`Kiểm tra hoàn tất · ${data.ok_count} hợp lệ, ${data.error_count} lỗi`);
       }
@@ -386,55 +420,34 @@ function ImportExcelModal({ onClose, onDone }) {
 
   const downloadTemplate = async () => {
     const token = localStorage.getItem("mkg_token");
-    const resp = await fetch(`${API}/htx/import-template`, { headers: { Authorization: `Bearer ${token}` } });
+    const resp = await fetch(`${API}${templateEndpoint}`, { headers: { Authorization: `Bearer ${token}` } });
     const blob = await resp.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "htx-import-template.xlsx";
-    a.click();
+    a.href = url; a.download = templateFilename; a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  const finalize = async () => {
-    setDryRun(false);
-    setBusy(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const token = localStorage.getItem("mkg_token");
-      const resp = await fetch(`${API}/htx/import-excel?dry_run=false`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.detail || "Lỗi tải lên");
-      toast.success(`Đã nhập ${data.inserted} HTX mới vào hệ thống`);
-      onDone();
-    } catch (e) {
-      toast.error(e.message || "Lỗi");
-      setBusy(false);
-    }
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-6" onClick={onClose} data-testid="import-excel-modal">
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-6" onClick={onClose} data-testid={`import-modal-${kind}`}>
       <div className="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="p-5 border-b border-slate-200 flex items-center gap-3 bg-gradient-to-r from-[#00A82D]/5 to-[#00A3E0]/5">
           <div className="w-10 h-10 rounded-md bg-[#00A82D] text-white flex items-center justify-center">
             <FileSpreadsheet className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-display font-bold text-xl">Nhập danh bạ HTX từ Excel</div>
-            <div className="text-xs text-slate-500">Kéo thả tệp .xlsx (tối đa 10MB, ~1.200 dòng)</div>
+            <div className="font-display font-bold text-xl">{title}</div>
+            <div className="text-xs text-slate-500">Kéo thả tệp .xlsx (tối đa 10MB)</div>
           </div>
-          <button onClick={downloadTemplate} className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50" data-testid="download-template-btn">
+          <button onClick={downloadTemplate} className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50" data-testid={`download-template-${kind}`}>
             <Download className="w-3.5 h-3.5" /> Tải mẫu
           </button>
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
+          <div className="text-[11px] text-slate-500 mb-3">
+            Cột yêu cầu: <code className="bg-slate-100 px-1 rounded font-mono">{columnsHint}</code>
+          </div>
           {!result && (
             <div
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -444,15 +457,13 @@ function ImportExcelModal({ onClose, onDone }) {
               className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
                 dragging ? "border-[#00A82D] bg-[#00A82D]/5" : "border-slate-300 hover:border-[#00A3E0] hover:bg-slate-50"
               }`}
-              data-testid="dropzone"
+              data-testid={`dropzone-${kind}`}
             >
               <UploadCloud className="w-12 h-12 text-slate-400 mx-auto mb-3" />
               {file ? (
                 <div>
                   <div className="font-medium text-slate-800">{file.name}</div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    {(file.size / 1024).toFixed(1)} KB · Nhấp để thay tệp
-                  </div>
+                  <div className="text-xs text-slate-500 mt-1">{(file.size / 1024).toFixed(1)} KB · Nhấp để thay tệp</div>
                 </div>
               ) : (
                 <div>
@@ -460,19 +471,13 @@ function ImportExcelModal({ onClose, onDone }) {
                   <div className="text-xs text-slate-500 mt-1">hoặc nhấp để chọn tệp từ máy</div>
                 </div>
               )}
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".xlsx"
-                className="hidden"
-                data-testid="file-input"
-                onChange={(e) => handleFile(e.target.files?.[0])}
-              />
+              <input ref={inputRef} type="file" accept=".xlsx" className="hidden"
+                data-testid={`file-input-${kind}`} onChange={(e) => handleFile(e.target.files?.[0])} />
             </div>
           )}
 
           {result && (
-            <div className="space-y-4" data-testid="import-result">
+            <div className="space-y-4" data-testid={`import-result-${kind}`}>
               <div className="grid grid-cols-3 gap-3">
                 <ResultStat icon={CheckCircle2} color="#00A82D" label="Hợp lệ" value={result.ok_count} />
                 <ResultStat icon={XCircle} color="#E74C3C" label="Lỗi" value={result.error_count} />
@@ -481,12 +486,12 @@ function ImportExcelModal({ onClose, onDone }) {
 
               {result.dry_run && result.ok_count > 0 && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-md p-3 text-xs text-emerald-800">
-                  Kiểm tra hoàn tất. Nhấn <b>Xác nhận nhập</b> để lưu {result.ok_count} HTX hợp lệ vào hệ thống.
+                  Kiểm tra hoàn tất. Nhấn <b>Xác nhận nhập</b> để lưu {result.ok_count} {entityLabel} hợp lệ vào hệ thống.
                 </div>
               )}
               {!result.dry_run && (
                 <div className="bg-green-50 border border-green-200 rounded-md p-3 text-xs text-green-800">
-                  Đã nhập thành công <b>{result.inserted}</b> HTX vào hệ thống.
+                  Đã nhập thành công <b>{result.inserted}</b> {entityLabel} vào hệ thống.
                 </div>
               )}
 
@@ -498,7 +503,7 @@ function ImportExcelModal({ onClose, onDone }) {
                       <thead className="bg-slate-50 sticky top-0">
                         <tr>
                           <th className="text-left px-3 py-2">Dòng</th>
-                          <th className="text-left px-3 py-2">Mã</th>
+                          <th className="text-left px-3 py-2">Mã / Serial</th>
                           <th className="text-left px-3 py-2">Lỗi</th>
                         </tr>
                       </thead>
@@ -506,7 +511,7 @@ function ImportExcelModal({ onClose, onDone }) {
                         {result.errors.map((e, i) => (
                           <tr key={i} className="border-t border-slate-100">
                             <td className="px-3 py-1.5 font-mono">{e.row}</td>
-                            <td className="px-3 py-1.5">{e.code || "—"}</td>
+                            <td className="px-3 py-1.5">{e.code || e.serial_no || "—"}</td>
                             <td className="px-3 py-1.5 text-[#E74C3C]">{e.errors.join(" · ")}</td>
                           </tr>
                         ))}
@@ -522,7 +527,7 @@ function ImportExcelModal({ onClose, onDone }) {
                   <div className="max-h-32 overflow-y-auto text-xs text-slate-600">
                     {result.skipped.map((s, i) => (
                       <div key={i} className="border-t border-slate-100 py-1">
-                        Dòng {s.row} · <span className="font-mono">{s.code}</span> — {s.reason}
+                        Dòng {s.row} · <span className="font-mono">{s.code || s.serial_no}</span> — {s.reason}
                       </div>
                     ))}
                   </div>
@@ -533,19 +538,23 @@ function ImportExcelModal({ onClose, onDone }) {
         </div>
 
         <div className="p-4 border-t border-slate-200 flex items-center gap-2 bg-slate-50">
-          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-white border border-slate-300" data-testid="import-cancel">
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-md bg-white border border-slate-300" data-testid={`import-cancel-${kind}`}>
             {result && !result.dry_run ? "Đóng" : "Hủy"}
           </button>
           {file && !result && (
-            <button onClick={doUpload} disabled={busy} className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm rounded-md bg-[#00A3E0] hover:bg-[#0089BE] text-white font-medium disabled:opacity-60" data-testid="import-validate">
+            <button onClick={() => doUpload(true)} disabled={busy}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm rounded-md bg-[#00A3E0] hover:bg-[#0089BE] text-white font-medium disabled:opacity-60"
+              data-testid={`import-validate-${kind}`}>
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               Kiểm tra dữ liệu
             </button>
           )}
           {result && result.dry_run && result.ok_count > 0 && (
-            <button onClick={finalize} disabled={busy} className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white font-medium disabled:opacity-60" data-testid="import-confirm">
+            <button onClick={() => doUpload(false)} disabled={busy}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white font-medium disabled:opacity-60"
+              data-testid={`import-confirm-${kind}`}>
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-              Xác nhận nhập {result.ok_count} HTX
+              Xác nhận nhập {result.ok_count} {entityLabel}
             </button>
           )}
         </div>
@@ -553,6 +562,9 @@ function ImportExcelModal({ onClose, onDone }) {
     </div>
   );
 }
+
+// Backwards-compatible alias used by earlier phase tests
+const ImportExcelModal = ImportModal;
 
 function ResultStat({ icon: Icon, color, label, value }) {
   return (
