@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock, Loader2, Sprout, ShieldCheck } from "lucide-react";
+import { User, Lock, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { toast, Toaster } from "sonner";
+
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
@@ -36,12 +37,6 @@ export default function LoginPage() {
         <div className="absolute inset-0" style={{ background: "rgba(0,163,224,0.30)" }} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40" />
         <div className="absolute bottom-10 left-10 right-10 text-white">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/30">
-              <Sprout className="w-7 h-7" />
-            </div>
-            <div className="text-sm uppercase tracking-widest text-white/80">MekongGreen · DCRD</div>
-          </div>
           <h1 className="font-display font-bold text-4xl xl:text-5xl leading-tight max-w-lg">
             Hiện đại hóa &amp; Cơ giới hóa Nông nghiệp Vùng ĐBSCL
           </h1>
@@ -54,14 +49,10 @@ export default function LoginPage() {
       {/* RIGHT FORM */}
       <div className="flex-1 flex items-center justify-center bg-[#F8FAFC] px-6">
         <div className="w-full max-w-md">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#00A82D] to-[#00A3E0] flex items-center justify-center">
-              <Sprout className="w-6 h-6 text-white" strokeWidth={2.4} />
-            </div>
-            <div>
-              <div className="font-display font-bold text-lg">MekongGreen</div>
-              <div className="text-xs text-slate-500">Cục Kinh tế Hợp tác & PTNT (DCRD)</div>
-            </div>
+          <div className="flex items-center gap-6 mb-8">
+            <img src="/logo-mekonggreen.png" alt="MekongGreen" className="h-60 w-auto" />
+            <span className="text-slate-300 text-4xl font-light">×</span>
+            <img src="/logo-dcrd.png" alt="DCRD" className="h-28 w-auto" />
           </div>
 
           <h2 className="font-display font-bold text-3xl text-slate-900 leading-tight">
