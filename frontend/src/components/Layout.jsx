@@ -34,13 +34,18 @@ const items = [
   },
 ];
 
-const adminItems = [
+// Xem được bởi cả Quản trị viên và Cán bộ Cục (staff chỉ xem, không sửa/xóa)
+const dataItems = [
   {
     to: "/data-management",
-    label: "Quản lý HTX & Máy",
+    label: "Quản lý HTX và Máy móc",
     icon: UserCog,
     testid: "nav-data-management",
   },
+];
+
+// Chỉ Quản trị viên mới thấy mục Quản trị & Cấu hình hệ thống
+const adminItems = [
   {
     to: "/admin",
     label: "Quản trị & Cấu hình",
@@ -62,7 +67,7 @@ export default function Layout() {
   const isAdmin = user.role === "admin";
 
   const activeCrumb =
-    [...items, ...adminItems].find((i) =>
+    [...items, ...dataItems, ...adminItems].find((i) =>
       location.pathname.startsWith(i.to)
     )?.label || "MekongGreen";
 
@@ -114,31 +119,45 @@ export default function Layout() {
             </NavLink>
           ))}
 
-          {isAdmin && (
-            <>
-              <div className="px-4 pt-5 pb-2 text-[10px] uppercase tracking-widest text-slate-400">
-                Quản trị viên
-              </div>
+          <div className="px-4 pt-5 pb-2 text-[10px] uppercase tracking-widest text-slate-400">
+            {isAdmin ? "Quản trị viên" : "Cán bộ Cục"}
+          </div>
 
-              {adminItems.map((it) => (
-                <NavLink
-                  key={it.to}
-                  to={it.to}
-                  data-testid={it.testid}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-5 py-3 text-sm border-l-4 transition-all ${
-                      isActive
-                        ? "bg-cyan-50 border-cyan-500 text-cyan-700 font-semibold"
-                        : "border-transparent text-slate-700 hover:bg-slate-100 hover:text-cyan-700"
-                    }`
-                  }
-                >
-                  <it.icon className="w-5 h-5" />
-                  <span>{it.label}</span>
-                </NavLink>
-              ))}
-            </>
-          )}
+          {dataItems.map((it) => (
+            <NavLink
+              key={it.to}
+              to={it.to}
+              data-testid={it.testid}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-5 py-3 text-sm border-l-4 transition-all ${
+                  isActive
+                    ? "bg-cyan-50 border-cyan-500 text-cyan-700 font-semibold"
+                    : "border-transparent text-slate-700 hover:bg-slate-100 hover:text-cyan-700"
+                }`
+              }
+            >
+              <it.icon className="w-5 h-5" />
+              <span>{it.label}</span>
+            </NavLink>
+          ))}
+
+          {isAdmin && adminItems.map((it) => (
+            <NavLink
+              key={it.to}
+              to={it.to}
+              data-testid={it.testid}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-5 py-3 text-sm border-l-4 transition-all ${
+                  isActive
+                    ? "bg-cyan-50 border-cyan-500 text-cyan-700 font-semibold"
+                    : "border-transparent text-slate-700 hover:bg-slate-100 hover:text-cyan-700"
+                }`
+              }
+            >
+              <it.icon className="w-5 h-5" />
+              <span>{it.label}</span>
+            </NavLink>
+          ))}
         </nav>
 
         {/* User */}

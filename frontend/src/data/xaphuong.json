@@ -1,0 +1,2957 @@
+[
+{
+"code": "an_giang_001_an_phu",
+"name": "An Phú (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_002_vinh_hau",
+"name": "Vĩnh Hậu (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_003_nhon_hoi",
+"name": "Nhơn Hội (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_004_khanh_binh",
+"name": "Khánh Bình (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_005_phu_huu",
+"name": "Phú Hữu (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_006_tan_an",
+"name": "Tân An (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_007_chau_phong",
+"name": "Châu Phong (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_008_vinh_xuong",
+"name": "Vĩnh Xương (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_009_phu_tan",
+"name": "Phú Tân (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_010_phu_an",
+"name": "Phú An (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_011_binh_thanh_dong",
+"name": "Bình Thạnh Đông (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_012_cho_vam",
+"name": "Chợ Vàm (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_013_hoa_lac",
+"name": "Hòa Lạc (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_014_phu_lam",
+"name": "Phú Lâm (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_015_chau_phu",
+"name": "Châu Phú (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_016_my_duc",
+"name": "Mỹ Đức (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_017_vinh_thanh_trung",
+"name": "Vĩnh Thạnh Trung (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_018_binh_my",
+"name": "Bình Mỹ (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_019_thanh_my_tay",
+"name": "Thạnh Mỹ Tây (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_020_an_cu",
+"name": "An Cư (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_021_nui_cam",
+"name": "Núi Cấm (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_022_ba_chuc",
+"name": "Ba Chúc (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_023_tri_ton",
+"name": "Tri Tôn (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_024_o_lam",
+"name": "Ô Lâm (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_025_co_to",
+"name": "Cô Tô (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_026_vinh_gia",
+"name": "Vĩnh Gia (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_027_an_chau",
+"name": "An Châu (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_028_binh_hoa",
+"name": "Bình Hòa (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_029_can_dang",
+"name": "Cần Đăng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_030_vinh_hanh",
+"name": "Vĩnh Hanh (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_031_vinh_an",
+"name": "Vĩnh An (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_032_cho_moi",
+"name": "Chợ Mới (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_033_cu_lao_gieng",
+"name": "Cù Lao Giêng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_034_hoi_an",
+"name": "Hội An (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_035_long_dien",
+"name": "Long Điền (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_036_nhon_my",
+"name": "Nhơn Mỹ (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_037_long_kien",
+"name": "Long Kiến (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_038_thoai_son",
+"name": "Thoại Sơn (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_039_oc_eo",
+"name": "Óc Eo (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_040_dinh_my",
+"name": "Định Mỹ (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_041_phu_hoa",
+"name": "Phú Hòa (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_042_vinh_trach",
+"name": "Vĩnh Trạch (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_043_tay_phu",
+"name": "Tây Phú (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_044_vinh_binh",
+"name": "Vĩnh Bình (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_045_vinh_thuan",
+"name": "Vĩnh Thuận (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_046_vinh_phong",
+"name": "Vĩnh Phong (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_047_vinh_hoa",
+"name": "Vĩnh Hòa (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_048_u_minh_thuong",
+"name": "U Minh Thượng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_049_dong_hoa",
+"name": "Đông Hòa (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_050_tan_thanh",
+"name": "Tân Thạnh (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_051_dong_hung",
+"name": "Đông Hưng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_052_an_minh",
+"name": "An Minh (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_053_van_khanh",
+"name": "Vân Khánh (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_054_tay_yen",
+"name": "Tây Yên (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_055_dong_thai",
+"name": "Đông Thái (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_056_an_bien",
+"name": "An Biên (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_057_dinh_hoa",
+"name": "Định Hòa (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_058_go_quao",
+"name": "Gò Quao (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_059_vinh_hoa_hung",
+"name": "Vĩnh Hòa Hưng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_060_vinh_tuy",
+"name": "Vĩnh Tuy (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_061_giong_rieng",
+"name": "Giồng Riềng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_062_thanh_hung",
+"name": "Thạnh Hưng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_063_long_thanh",
+"name": "Long Thạnh (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_064_hoa_hung",
+"name": "Hòa Hưng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_065_ngoc_chuc",
+"name": "Ngọc Chúc (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_066_hoa_thuan",
+"name": "Hòa Thuận (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_067_tan_hoi",
+"name": "Tân Hội (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_068_tan_hiep",
+"name": "Tân Hiệp (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_069_thanh_dong",
+"name": "Thạnh Đông (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_070_thanh_loc",
+"name": "Thạnh Lộc (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_071_chau_thanh",
+"name": "Châu Thành (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_072_binh_an",
+"name": "Bình An (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_073_hon_dat",
+"name": "Hòn Đất (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_074_son_kien",
+"name": "Sơn Kiên (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_075_my_thuan",
+"name": "Mỹ Thuận (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_076_hoa_dien",
+"name": "Hòa Điền (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_077_kien_luong",
+"name": "Kiên Lương (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_078_giang_thanh",
+"name": "Giang Thành (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_079_vinh_dieu",
+"name": "Vĩnh Điều (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_080_long_xuyen",
+"name": "Long Xuyên (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_081_binh_duc",
+"name": "Bình Đức (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_082_my_thoi",
+"name": "Mỹ Thới (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_083_chau_doc",
+"name": "Châu Đốc (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_084_vinh_te",
+"name": "Vĩnh Tế (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_085_tan_chau",
+"name": "Tân Châu (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_086_long_phu",
+"name": "Long Phú (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_087_tinh_bien",
+"name": "Tịnh Biên (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_088_thoi_son",
+"name": "Thới Sơn (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_089_chi_lang",
+"name": "Chi Lăng (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_090_vinh_thong",
+"name": "Vĩnh Thông (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_091_rach_gia",
+"name": "Rạch Giá (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_092_ha_tien",
+"name": "Hà Tiên (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_093_to_chau",
+"name": "Tô Châu (Phường)",
+"province": "AG"
+},
+{
+"code": "an_giang_094_kien_hai",
+"name": "Kiên Hải (Đặc khu)",
+"province": "AG"
+},
+{
+"code": "an_giang_095_phu_quoc",
+"name": "Phú Quốc (Đặc khu)",
+"province": "AG"
+},
+{
+"code": "an_giang_096_tho_chau",
+"name": "Thổ Châu (Đặc khu)",
+"province": "AG"
+},
+{
+"code": "an_giang_097_my_hoa_hung",
+"name": "Mỹ Hòa Hưng (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_098_binh_giang",
+"name": "Bình Giang (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_099_binh_son",
+"name": "Bình Sơn (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_100_hon_nghe",
+"name": "Hòn Nghệ (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_101_son_hai",
+"name": "Sơn Hải (Xã)",
+"province": "AG"
+},
+{
+"code": "an_giang_102_tien_hai",
+"name": "Tiên Hải (Xã)",
+"province": "AG"
+},
+{
+"code": "vinh_long_001_cai_nhum",
+"name": "Cái Nhum (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_002_tan_long_hoi",
+"name": "Tân Long Hội (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_003_nhon_phu",
+"name": "Nhơn Phú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_004_binh_phuoc",
+"name": "Bình Phước (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_005_an_binh",
+"name": "An Bình (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_006_long_ho",
+"name": "Long Hồ (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_007_phu_quoi",
+"name": "Phú Quới (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_008_quoi_thien",
+"name": "Quới Thiện (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_009_trung_thanh",
+"name": "Trung Thành (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_010_trung_ngai",
+"name": "Trung Ngãi (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_011_quoi_an",
+"name": "Quới An (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_012_trung_hiep",
+"name": "Trung Hiệp (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_013_hieu_phung",
+"name": "Hiếu Phụng (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_014_hieu_thanh",
+"name": "Hiếu Thành (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_015_luc_si_thanh",
+"name": "Lục Sĩ Thành (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_016_tra_on",
+"name": "Trà Ôn (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_017_tra_con",
+"name": "Trà Côn (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_018_vinh_xuan",
+"name": "Vĩnh Xuân (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_019_hoa_binh",
+"name": "Hòa Bình (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_020_hoa_hiep",
+"name": "Hòa Hiệp (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_021_tam_binh",
+"name": "Tam Bình (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_022_ngai_tu",
+"name": "Ngãi Tứ (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_023_song_phu",
+"name": "Song Phú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_024_cai_ngang",
+"name": "Cái Ngang (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_025_tan_quoi",
+"name": "Tân Quới (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_026_tan_luoc",
+"name": "Tân Lược (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_027_my_thuan",
+"name": "Mỹ Thuận (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_028_long_huu",
+"name": "Long Hữu (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_029_cang_long",
+"name": "Càng Long (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_030_an_truong",
+"name": "An Trường (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_031_tan_an",
+"name": "Tân An (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_032_nhi_long",
+"name": "Nhị Long (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_033_binh_phu",
+"name": "Bình Phú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_034_chau_thanh",
+"name": "Châu Thành (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_035_song_loc",
+"name": "Song Lộc (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_036_hung_my",
+"name": "Hưng Mỹ (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_037_cau_ke",
+"name": "Cầu Kè (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_038_phong_thanh",
+"name": "Phong Thạnh (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_039_an_phu_tan",
+"name": "An Phú Tân (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_040_tam_ngai",
+"name": "Tam Ngãi (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_041_tieu_can",
+"name": "Tiểu Cần (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_042_tan_hoa",
+"name": "Tân Hoà (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_043_hung_hoa",
+"name": "Hùng Hoà (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_044_tap_ngai",
+"name": "Tập Ngãi (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_045_cau_ngang",
+"name": "Cầu Ngang (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_046_my_long",
+"name": "Mỹ Long (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_047_vinh_kim",
+"name": "Vinh Kim (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_048_nhi_truong",
+"name": "Nhị Trường (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_049_hiep_my",
+"name": "Hiệp Mỹ (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_050_tra_cu",
+"name": "Trà Cú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_051_dai_an",
+"name": "Đại An (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_052_luu_nghiep_anh",
+"name": "Lưu Nghiệp Anh (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_053_ham_giang",
+"name": "Hàm Giang (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_054_long_hiep",
+"name": "Long Hiệp (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_055_tap_son",
+"name": "Tập Sơn (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_056_long_thanh",
+"name": "Long Thành (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_057_don_chau",
+"name": "Đôn Châu (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_058_ngu_lac",
+"name": "Ngũ Lạc (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_059_phu_tuc",
+"name": "Phú Túc (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_060_giao_long",
+"name": "Giao Long (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_061_tien_thuy",
+"name": "Tiên Thủy (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_062_tan_phu",
+"name": "Tân Phú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_063_phu_phung",
+"name": "Phú Phụng (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_064_cho_lach",
+"name": "Chợ Lách (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_065_vinh_thanh",
+"name": "Vĩnh Thành (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_066_hung_khanh_trung",
+"name": "Hưng Khánh Trung (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_067_phuoc_my_trung",
+"name": "Phước Mỹ Trung (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_068_tan_thanh_binh",
+"name": "Tân Thành Bình (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_069_nhuan_phu_tan",
+"name": "Nhuận Phú Tân (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_070_dong_khoi",
+"name": "Đồng Khởi (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_071_mo_cay",
+"name": "Mỏ Cày (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_072_thanh_thoi",
+"name": "Thành Thới (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_073_an_dinh",
+"name": "An Định (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_074_huong_my",
+"name": "Hương Mỹ (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_075_dai_dien",
+"name": "Đại Điền (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_076_quoi_dien",
+"name": "Quới Điền (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_077_thanh_phu",
+"name": "Thạnh Phú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_078_an_qui",
+"name": "An Qui (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_079_thanh_hai",
+"name": "Thạnh Hải (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_080_thanh_phong",
+"name": "Thạnh Phong (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_081_tan_thuy",
+"name": "Tân Thủy (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_082_bao_thanh",
+"name": "Bảo Thạnh (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_083_ba_tri",
+"name": "Ba Tri (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_084_tan_xuan",
+"name": "Tân Xuân (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_085_my_chanh_hoa",
+"name": "Mỹ Chánh Hòa (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_086_an_ngai_trung",
+"name": "An Ngãi Trung (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_087_an_hiep",
+"name": "An Hiệp (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_088_hung_nhuong",
+"name": "Hưng Nhượng (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_089_giong_trom",
+"name": "Giồng Trôm (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_090_tan_hao",
+"name": "Tân Hào (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_091_phuoc_long",
+"name": "Phước Long (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_092_luong_phu",
+"name": "Lương Phú (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_093_chau_hoa",
+"name": "Châu Hòa (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_094_luong_hoa",
+"name": "Lương Hòa (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_095_thoi_thuan",
+"name": "Thới Thuận (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_096_thanh_phuoc",
+"name": "Thạnh Phước (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_097_binh_dai",
+"name": "Bình Đại (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_098_thanh_tri",
+"name": "Thạnh Trị (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_099_loc_thuan",
+"name": "Lộc Thuận (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_100_chau_hung",
+"name": "Châu Hưng (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_101_phu_thuan",
+"name": "Phú Thuận (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_102_thanh_duc",
+"name": "Thanh Đức (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_103_long_chau",
+"name": "Long Châu (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_104_phuoc_hau",
+"name": "Phước Hậu (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_105_tan_hanh",
+"name": "Tân Hạnh (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_106_tan_ngai",
+"name": "Tân Ngãi (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_107_binh_minh",
+"name": "Bình Minh (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_108_cai_von",
+"name": "Cái Vồn (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_109_dong_thanh",
+"name": "Đông Thành (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_110_tra_vinh",
+"name": "Trà Vinh (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_111_long_duc",
+"name": "Long Đức (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_112_nguyet_hoa",
+"name": "Nguyệt Hoá (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_113_hoa_thuan",
+"name": "Hoà Thuận (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_114_duyen_hai",
+"name": "Duyên Hải (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_115_truong_long_hoa",
+"name": "Trường Long Hoà (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_116_an_hoi",
+"name": "An Hội (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_117_phu_khuong",
+"name": "Phú Khương (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_118_ben_tre",
+"name": "Bến Tre (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_119_son_dong",
+"name": "Sơn Đông (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_120_phu_tan",
+"name": "Phú Tân (Phường)",
+"province": "VL"
+},
+{
+"code": "vinh_long_121_long_hoa_huyen_chau_thanh",
+"name": "Long Hòa (huyện Châu Thành) (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_122_dong_hai",
+"name": "Đông Hải (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_123_long_vinh",
+"name": "Long Vĩnh (Xã)",
+"province": "VL"
+},
+{
+"code": "vinh_long_124_hoa_minh",
+"name": "Hòa Minh (Xã)",
+"province": "VL"
+},
+{
+"code": "tay_ninh_001_hung_dien",
+"name": "Hưng Điền (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_002_vinh_thanh",
+"name": "Vĩnh Thạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_003_tan_hung",
+"name": "Tân Hưng (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_004_vinh_chau",
+"name": "Vĩnh Châu (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_005_tuyen_binh",
+"name": "Tuyên Bình (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_006_vinh_hung",
+"name": "Vĩnh Hưng (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_007_khanh_hung",
+"name": "Khánh Hưng (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_008_tuyen_thanh",
+"name": "Tuyên Thạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_009_binh_hiep",
+"name": "Bình Hiệp (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_010_binh_hoa",
+"name": "Bình Hòa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_011_moc_hoa",
+"name": "Mộc Hóa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_012_hau_thanh",
+"name": "Hậu Thạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_013_nhon_hoa_lap",
+"name": "Nhơn Hòa Lập (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_014_nhon_ninh",
+"name": "Nhơn Ninh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_015_tan_thanh",
+"name": "Tân Thạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_016_binh_thanh",
+"name": "Bình Thành (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_017_thanh_phuoc",
+"name": "Thạnh Phước (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_018_thanh_hoa",
+"name": "Thạnh Hóa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_019_tan_tay",
+"name": "Tân Tây (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_020_thu_thua",
+"name": "Thủ Thừa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_021_my_an",
+"name": "Mỹ An (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_022_my_thanh",
+"name": "Mỹ Thạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_023_tan_long",
+"name": "Tân Long (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_024_my_quy",
+"name": "Mỹ Quý (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_025_dong_thanh",
+"name": "Đông Thành (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_026_duc_hue",
+"name": "Đức Huệ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_027_an_ninh",
+"name": "An Ninh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_028_hiep_hoa",
+"name": "Hiệp Hòa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_029_hau_nghia",
+"name": "Hậu Nghĩa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_030_hoa_khanh",
+"name": "Hòa Khánh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_031_duc_lap",
+"name": "Đức Lập (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_032_my_hanh",
+"name": "Mỹ Hạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_033_duc_hoa",
+"name": "Đức Hòa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_034_thanh_loi",
+"name": "Thạnh Lợi (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_035_binh_duc",
+"name": "Bình Đức (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_036_luong_hoa",
+"name": "Lương Hòa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_037_ben_luc",
+"name": "Bến Lức (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_038_my_yen",
+"name": "Mỹ Yên (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_039_long_cang",
+"name": "Long Cang (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_040_rach_kien",
+"name": "Rạch Kiến (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_041_my_le",
+"name": "Mỹ Lệ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_042_tan_lan",
+"name": "Tân Lân (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_043_can_duoc",
+"name": "Cần Đước (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_044_long_huu",
+"name": "Long Hựu (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_045_phuoc_ly",
+"name": "Phước Lý (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_046_my_loc",
+"name": "Mỹ Lộc (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_047_can_giuoc",
+"name": "Cần Giuộc (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_048_phuoc_vinh_tay",
+"name": "Phước Vĩnh Tây (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_049_tan_tap",
+"name": "Tân Tập (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_050_vam_co",
+"name": "Vàm Cỏ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_051_tan_tru",
+"name": "Tân Trụ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_052_nhut_tao",
+"name": "Nhựt Tảo (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_053_thuan_my",
+"name": "Thuận Mỹ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_054_an_luc_long",
+"name": "An Lục Long (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_055_tam_vu",
+"name": "Tầm Vu (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_056_vinh_cong",
+"name": "Vĩnh Công (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_057_phuoc_chi",
+"name": "Phước Chỉ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_058_hung_thuan",
+"name": "Hưng Thuận (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_059_thanh_duc",
+"name": "Thạnh Đức (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_060_phuoc_thanh",
+"name": "Phước Thạnh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_061_truong_mit",
+"name": "Truông Mít (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_062_loc_ninh",
+"name": "Lộc Ninh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_063_cau_khoi",
+"name": "Cầu Khởi (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_064_duong_minh_chau",
+"name": "Dương Minh Châu (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_065_tan_dong",
+"name": "Tân Đông (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_066_tan_chau",
+"name": "Tân Châu (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_067_tan_phu",
+"name": "Tân Phú (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_068_tan_hoi",
+"name": "Tân Hội (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_069_tan_thanh",
+"name": "Tân Thành (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_070_tan_hoa",
+"name": "Tân Hòa (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_071_tan_lap",
+"name": "Tân Lập (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_072_tan_bien",
+"name": "Tân Biên (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_073_thanh_binh",
+"name": "Thạnh Bình (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_074_tra_vong",
+"name": "Trà Vong (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_075_phuoc_vinh",
+"name": "Phước Vinh (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_076_hoa_hoi",
+"name": "Hòa Hội (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_077_ninh_dien",
+"name": "Ninh Điền (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_078_chau_thanh",
+"name": "Châu Thành (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_079_hao_duoc",
+"name": "Hảo Đước (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_080_long_chu",
+"name": "Long Chữ (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_081_long_thuan",
+"name": "Long Thuận (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_082_ben_cau",
+"name": "Bến Cầu (Xã)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_083_kien_tuong",
+"name": "Kiến Tường (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_084_long_an",
+"name": "Long An (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_085_tan_an",
+"name": "Tân An (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_086_khanh_hau",
+"name": "Khánh Hậu (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_087_tan_ninh",
+"name": "Tân Ninh (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_088_binh_minh",
+"name": "Bình Minh (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_089_ninh_thanh",
+"name": "Ninh Thạnh (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_090_long_hoa",
+"name": "Long Hoa (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_091_hoa_thanh",
+"name": "Hòa Thành (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_092_thanh_dien",
+"name": "Thanh Điền (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_093_trang_bang",
+"name": "Trảng Bàng (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_094_an_tinh",
+"name": "An Tịnh (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_095_go_dau",
+"name": "Gò Dầu (Phường)",
+"province": "TN"
+},
+{
+"code": "tay_ninh_096_gia_loc",
+"name": "Gia Lộc (Phường)",
+"province": "TN"
+},
+{
+"code": "dong_thap_001_tan_hong",
+"name": "Tân Hồng (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_002_tan_thanh",
+"name": "Tân Thành (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_003_tan_ho_co",
+"name": "Tân Hộ Cơ (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_004_an_phuoc",
+"name": "An Phước (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_005_thuong_phuoc",
+"name": "Thường Phước (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_006_long_khanh",
+"name": "Long Khánh (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_007_long_phu_thuan",
+"name": "Long Phú Thuận (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_008_an_hoa",
+"name": "An Hòa (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_009_tam_nong",
+"name": "Tam Nông (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_010_phu_tho",
+"name": "Phú Thọ (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_011_tram_chim",
+"name": "Tràm Chim (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_012_phu_cuong",
+"name": "Phú Cường (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_013_an_long",
+"name": "An Long (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_014_thanh_binh",
+"name": "Thanh Bình (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_015_tan_thanh",
+"name": "Tân Thạnh (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_016_binh_thanh",
+"name": "Bình Thành (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_017_tan_long",
+"name": "Tân Long (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_018_thap_muoi",
+"name": "Tháp Mười (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_019_thanh_my",
+"name": "Thanh Mỹ (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_020_my_qui",
+"name": "Mỹ Quí (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_021_doc_binh_kieu",
+"name": "Đốc Binh Kiều (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_022_truong_xuan",
+"name": "Trường Xuân (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_023_phuong_thinh",
+"name": "Phương Thịnh (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_024_phong_my",
+"name": "Phong Mỹ (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_025_ba_sao",
+"name": "Ba Sao (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_026_my_tho",
+"name": "Mỹ Thọ (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_027_binh_hang_trung",
+"name": "Bình Hàng Trung (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_028_my_hiep",
+"name": "Mỹ Hiệp (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_029_my_an_hung",
+"name": "Mỹ An Hưng (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_030_tan_khanh_trung",
+"name": "Tân Khánh Trung (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_031_lap_vo",
+"name": "Lấp Vò (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_032_lai_vung",
+"name": "Lai Vung (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_033_hoa_long",
+"name": "Hòa Long (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_034_phong_hoa",
+"name": "Phong Hòa (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_035_tan_duong",
+"name": "Tân Dương (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_036_phu_huu",
+"name": "Phú Hựu (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_037_tan_nhuan_dong",
+"name": "Tân Nhuận Đông (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_038_tan_phu_trung",
+"name": "Tân Phú Trung (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_039_tan_phu",
+"name": "Tân Phú (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_040_thanh_hung",
+"name": "Thanh Hưng (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_041_an_huu",
+"name": "An Hữu (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_042_my_loi",
+"name": "Mỹ Lợi (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_043_my_duc_tay",
+"name": "Mỹ Đức Tây (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_044_my_thien",
+"name": "Mỹ Thiện (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_045_hau_my",
+"name": "Hậu Mỹ (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_046_hoi_cu",
+"name": "Hội Cư (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_047_cai_be",
+"name": "Cái Bè (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_048_my_thanh",
+"name": "Mỹ Thành (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_049_thanh_phu",
+"name": "Thạnh Phú (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_050_binh_phu",
+"name": "Bình Phú (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_051_hiep_duc",
+"name": "Hiệp Đức (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_052_long_tien",
+"name": "Long Tiên (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_053_ngu_hiep",
+"name": "Ngũ Hiệp (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_054_tan_phuoc_1",
+"name": "Tân Phước 1 (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_055_tan_phuoc_2",
+"name": "Tân Phước 2 (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_056_tan_phuoc_3",
+"name": "Tân Phước 3 (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_057_hung_thanh",
+"name": "Hưng Thạnh (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_058_tan_huong",
+"name": "Tân Hương (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_059_chau_thanh",
+"name": "Châu Thành (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_060_long_hung",
+"name": "Long Hưng (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_061_long_dinh",
+"name": "Long Định (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_062_binh_trung",
+"name": "Bình Trưng (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_063_vinh_kim",
+"name": "Vĩnh Kim (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_064_kim_son",
+"name": "Kim Sơn (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_065_my_tinh_an",
+"name": "Mỹ Tịnh An (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_066_luong_hoa_lac",
+"name": "Lương Hòa Lạc (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_067_tan_thuan_binh",
+"name": "Tân Thuận Bình (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_068_cho_gao",
+"name": "Chợ Gạo (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_069_an_thanh_thuy",
+"name": "An Thạnh Thủy (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_070_binh_ninh",
+"name": "Bình Ninh (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_071_vinh_binh",
+"name": "Vĩnh Bình (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_072_dong_son",
+"name": "Đồng Sơn (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_073_phu_thanh",
+"name": "Phú Thành (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_074_long_binh",
+"name": "Long Bình (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_075_vinh_huu",
+"name": "Vĩnh Hựu (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_076_go_cong_dong",
+"name": "Gò Công Đông (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_077_tan_dien",
+"name": "Tân Điền (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_078_tan_hoa",
+"name": "Tân Hòa (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_079_tan_dong",
+"name": "Tân Đông (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_080_gia_thuan",
+"name": "Gia Thuận (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_081_tan_thoi",
+"name": "Tân Thới (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_082_tan_phu_dong",
+"name": "Tân Phú Đông (Xã)",
+"province": "DT"
+},
+{
+"code": "dong_thap_083_my_tho",
+"name": "Mỹ Tho (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_084_dao_thanh",
+"name": "Đạo Thạnh (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_085_my_phong",
+"name": "Mỹ Phong (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_086_thoi_son",
+"name": "Thới Sơn (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_087_trung_an",
+"name": "Trung An (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_088_go_cong",
+"name": "Gò Công (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_089_long_thuan",
+"name": "Long Thuận (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_090_binh_xuan",
+"name": "Bình Xuân (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_091_son_qui",
+"name": "Sơn Qui (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_092_an_binh",
+"name": "An Bình (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_093_hong_ngu",
+"name": "Hồng Ngự (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_094_thuong_lac",
+"name": "Thường Lạc (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_095_cao_lanh",
+"name": "Cao Lãnh (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_096_my_ngai",
+"name": "Mỹ Ngãi (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_097_my_tra",
+"name": "Mỹ Trà (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_098_sa_dec",
+"name": "Sa Đéc (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_099_my_phuoc_tay",
+"name": "Mỹ Phước Tây (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_100_thanh_hoa",
+"name": "Thanh Hòa (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_101_cai_lay",
+"name": "Cai Lậy (Phường)",
+"province": "DT"
+},
+{
+"code": "dong_thap_102_nhi_quy",
+"name": "Nhị Quý (Phường)",
+"province": "DT"
+},
+{
+"code": "can_tho_001_ninh_kieu",
+"name": "Ninh Kiều (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_002_cai_khe",
+"name": "Cái Khế (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_003_tan_an",
+"name": "Tân An (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_004_an_binh",
+"name": "An Bình (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_005_thoi_an_dong",
+"name": "Thới An Đông (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_006_binh_thuy",
+"name": "Bình Thủy (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_007_long_tuyen",
+"name": "Long Tuyền (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_008_cai_rang",
+"name": "Cái Răng (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_009_hung_phu",
+"name": "Hưng Phú (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_010_o_mon",
+"name": "Ô Môn (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_011_phuoc_thoi",
+"name": "Phước Thới (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_012_thoi_long",
+"name": "Thới Long (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_013_trung_nhut",
+"name": "Trung Nhứt (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_014_thuan_hung",
+"name": "Thuận Hưng (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_015_thot_not",
+"name": "Thốt Nốt (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_016_vi_thanh",
+"name": "Vị Thanh (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_017_vi_tan",
+"name": "Vị Tân (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_018_long_binh",
+"name": "Long Bình (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_019_long_my",
+"name": "Long Mỹ (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_020_long_phu_1",
+"name": "Long Phú 1 (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_021_dai_thanh",
+"name": "Đại Thành (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_022_nga_bay",
+"name": "Ngã Bảy (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_023_phu_loi",
+"name": "Phú Lợi (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_024_soc_trang",
+"name": "Sóc Trăng (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_025_my_xuyen",
+"name": "Mỹ Xuyên (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_026_vinh_phuoc",
+"name": "Vĩnh Phước (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_027_vinh_chau",
+"name": "Vĩnh Châu (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_028_khanh_hoa",
+"name": "Khánh Hòa (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_029_nga_nam",
+"name": "Ngã Năm (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_030_my_quoi",
+"name": "Mỹ Quới (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_031_phong_dien",
+"name": "Phong Điền (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_032_nhon_ai",
+"name": "Nhơn Ái (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_033_thoi_lai",
+"name": "Thới Lai (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_034_dong_thuan",
+"name": "Đông Thuận (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_035_truong_xuan",
+"name": "Trường Xuân (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_036_truong_thanh",
+"name": "Trường Thành (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_037_co_do",
+"name": "Cờ Đỏ (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_038_dong_hiep",
+"name": "Đông Hiệp (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_039_trung_hung",
+"name": "Trung Hưng (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_040_vinh_thanh",
+"name": "Vĩnh Thạnh (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_041_vinh_trinh",
+"name": "Vĩnh Trinh (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_042_thanh_an",
+"name": "Thạnh An (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_043_thanh_quoi",
+"name": "Thạnh Quới (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_044_hoa_luu",
+"name": "Hỏa Lựu (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_045_vi_thuy",
+"name": "Vị Thủy (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_046_vinh_thuan_dong",
+"name": "Vĩnh Thuận Đông (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_047_vi_thanh_1",
+"name": "Vị Thanh 1 (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_048_vinh_tuong",
+"name": "Vĩnh Tường (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_049_vinh_vien",
+"name": "Vĩnh Viễn (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_050_xa_phien",
+"name": "Xà Phiên (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_051_luong_tam",
+"name": "Lương Tâm (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_052_thanh_xuan",
+"name": "Thạnh Xuân (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_053_tan_hoa",
+"name": "Tân Hòa (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_054_truong_long_tay",
+"name": "Trường Long Tây (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_055_chau_thanh",
+"name": "Châu Thành (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_056_dong_phuoc",
+"name": "Đông Phước (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_057_phu_huu",
+"name": "Phú Hữu (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_058_tan_binh",
+"name": "Tân Bình (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_059_hoa_an",
+"name": "Hòa An (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_060_phuong_binh",
+"name": "Phương Bình (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_061_tan_phuoc_hung",
+"name": "Tân Phước Hưng (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_062_hiep_hung",
+"name": "Hiệp Hưng (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_063_phung_hiep",
+"name": "Phụng Hiệp (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_064_thanh_hoa",
+"name": "Thạnh Hòa (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_065_hoa_tu",
+"name": "Hòa Tú (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_066_gia_hoa",
+"name": "Gia Hòa (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_067_nhu_gia",
+"name": "Nhu Gia (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_068_ngoc_to",
+"name": "Ngọc Tố (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_069_truong_khanh",
+"name": "Trường Khánh (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_070_dai_ngai",
+"name": "Đại Ngãi (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_071_tan_thanh",
+"name": "Tân Thạnh (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_072_long_phu",
+"name": "Long Phú (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_073_nhon_my",
+"name": "Nhơn Mỹ (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_074_an_lac_thon",
+"name": "An Lạc Thôn (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_075_ke_sach",
+"name": "Kế Sách (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_076_thoi_an_hoi",
+"name": "Thới An Hội (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_077_dai_hai",
+"name": "Đại Hải (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_078_phu_tam",
+"name": "Phú Tâm (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_079_an_ninh",
+"name": "An Ninh (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_080_thuan_hoa",
+"name": "Thuận Hòa (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_081_ho_dac_kien",
+"name": "Hồ Đắc Kiện (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_082_my_tu",
+"name": "Mỹ Tú (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_083_long_hung",
+"name": "Long Hưng (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_084_my_huong",
+"name": "Mỹ Hương (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_085_tan_long",
+"name": "Tân Long (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_086_phu_loc",
+"name": "Phú Lộc (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_087_vinh_loi",
+"name": "Vĩnh Lợi (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_088_lam_tan",
+"name": "Lâm Tân (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_089_thanh_thoi_an",
+"name": "Thạnh Thới An (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_090_tai_van",
+"name": "Tài Văn (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_091_lieu_tu",
+"name": "Liêu Tú (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_092_lich_hoi_thuong",
+"name": "Lịch Hội Thượng (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_093_tran_de",
+"name": "Trần Đề (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_094_an_thanh",
+"name": "An Thạnh (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_095_cu_lao_dung",
+"name": "Cù Lao Dung (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_096_tan_loc",
+"name": "Tân Lộc (Phường)",
+"province": "CT"
+},
+{
+"code": "can_tho_097_truong_long",
+"name": "Trường Long (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_098_thanh_phu",
+"name": "Thạnh Phú (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_099_thoi_hung",
+"name": "Thới Hưng (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_100_phong_nam",
+"name": "Phong Nẫm (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_101_my_phuoc",
+"name": "Mỹ Phước (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_102_lai_hoa",
+"name": "Lai Hòa (Xã)",
+"province": "CT"
+},
+{
+"code": "can_tho_103_vinh_hai",
+"name": "Vĩnh Hải (Xã)",
+"province": "CT"
+},
+{
+"code": "ca_mau_001_tan_thuan",
+"name": "Tân Thuận (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_002_tan_tien",
+"name": "Tân Tiến (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_003_ta_an_khuong",
+"name": "Tạ An Khương (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_004_tran_phan",
+"name": "Trần Phán (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_005_thanh_tung",
+"name": "Thanh Tùng (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_006_dam_doi",
+"name": "Đầm Dơi (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_007_quach_pham",
+"name": "Quách Phẩm (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_008_u_minh",
+"name": "U Minh (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_009_nguyen_phich",
+"name": "Nguyễn Phích (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_010_khanh_lam",
+"name": "Khánh Lâm (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_011_khanh_an",
+"name": "Khánh An (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_012_phan_ngoc_hien",
+"name": "Phan Ngọc Hiển (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_013_dat_mui",
+"name": "Đất Mũi (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_014_tan_an",
+"name": "Tân Ân (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_015_khanh_binh",
+"name": "Khánh Bình (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_016_da_bac",
+"name": "Đá Bạc (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_017_khanh_hung",
+"name": "Khánh Hưng (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_018_song_doc",
+"name": "Sông Đốc (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_019_tran_van_thoi",
+"name": "Trần Văn Thời (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_020_thoi_binh",
+"name": "Thới Bình (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_021_tri_phai",
+"name": "Trí Phải (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_022_tan_loc",
+"name": "Tân Lộc (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_023_bien_bach",
+"name": "Biển Bạch (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_024_dat_moi",
+"name": "Đất Mới (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_025_nam_can",
+"name": "Năm Căn (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_026_tam_giang",
+"name": "Tam Giang (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_027_cai_doi_vam",
+"name": "Cái Đôi Vàm (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_028_nguyen_viet_khai",
+"name": "Nguyễn Việt Khái (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_029_phu_tan",
+"name": "Phú Tân (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_030_phu_my",
+"name": "Phú Mỹ (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_031_luong_the_tran",
+"name": "Lương Thế Trân (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_032_tan_hung",
+"name": "Tân Hưng (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_033_hung_my",
+"name": "Hưng Mỹ (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_034_cai_nuoc",
+"name": "Cái Nước (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_035_phong_thanh",
+"name": "Phong Thạnh (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_036_hong_dan",
+"name": "Hồng Dân (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_037_vinh_loc",
+"name": "Vĩnh Lộc (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_038_ninh_thanh_loi",
+"name": "Ninh Thạnh Lợi (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_039_ninh_quoi",
+"name": "Ninh Quới (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_040_ganh_hao",
+"name": "Gành Hào (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_041_dinh_thanh",
+"name": "Định Thành (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_042_an_trach",
+"name": "An Trạch (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_043_long_dien",
+"name": "Long Điền (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_044_dong_hai",
+"name": "Đông Hải (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_045_hoa_binh",
+"name": "Hoà Bình (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_046_vinh_my",
+"name": "Vĩnh Mỹ (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_047_vinh_hau",
+"name": "Vĩnh Hậu (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_048_phuoc_long",
+"name": "Phước Long (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_049_vinh_phuoc",
+"name": "Vĩnh Phước (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_050_phong_hiep",
+"name": "Phong Hiệp (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_051_vinh_thanh",
+"name": "Vĩnh Thanh (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_052_vinh_loi",
+"name": "Vĩnh Lợi (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_053_hung_hoi",
+"name": "Hưng Hội (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_054_chau_thoi",
+"name": "Châu Thới (Xã)",
+"province": "CM"
+},
+{
+"code": "ca_mau_055_bac_lieu",
+"name": "Bạc Liêu (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_056_vinh_trach",
+"name": "Vĩnh Trạch (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_057_hiep_thanh",
+"name": "Hiệp Thành (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_058_gia_rai",
+"name": "Giá Rai (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_059_lang_tron",
+"name": "Láng Tròn (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_060_an_xuyen",
+"name": "An Xuyên (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_061_ly_van_lam",
+"name": "Lý Văn Lâm (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_062_tan_thanh",
+"name": "Tân Thành (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_063_hoa_thanh",
+"name": "Hoà Thành (Phường)",
+"province": "CM"
+},
+{
+"code": "ca_mau_064_ho_thi_ky",
+"name": "Hồ Thị Kỷ (Xã)",
+"province": "CM"
+}
+]
