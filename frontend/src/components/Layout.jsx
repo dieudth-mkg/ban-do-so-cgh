@@ -8,12 +8,13 @@ import { useAuth } from "../lib/auth";
 const items = [
   { to: "/map", label: "Bản đồ số", icon: Map, testid: "nav-map" },
   { to: "/dashboard", label: "Tổng quan", icon: LayoutDashboard, testid: "nav-dashboard" },
+   { to: "/data-management", label: "Quản lý HTX & Máy móc", icon: UserCog, testid: "nav-data-management" },
   { to: "/supply-demand", label: "Cân đối & Cảnh báo", icon: Scale, testid: "nav-supply-demand" },
   { to: "/reports", label: "Báo cáo & Xuất dữ liệu", icon: BarChart3, testid: "nav-reports" },
+  
 ];
 
 const adminItems = [
-  { to: "/data-management", label: "Quản lý HTX & Máy", icon: UserCog, testid: "nav-data-management" },
   { to: "/admin", label: "Quản trị & Cấu hình", icon: Settings, testid: "nav-admin" },
 ];
 

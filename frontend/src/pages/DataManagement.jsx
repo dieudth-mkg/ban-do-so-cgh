@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { api, API } from "../lib/api";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
-import { Building2, Wrench, PlusCircle, Search, UploadCloud, Trash2, PencilLine, FileSpreadsheet, CheckCircle2, XCircle, AlertTriangle, Download, Loader2 } from "lucide-react";
+import { Building2, Wrench, PlusCircle, Search, UploadCloud, Trash2, PencilLine, FileSpreadsheet, CheckCircle2, XCircle, AlertTriangle, Download, Loader2, Eye } from "lucide-react";
 import { toast, Toaster } from "sonner";
+import { useAuth } from "../lib/auth";
 
 const STATUS_LABEL = {
   hoat_dong: "Hoạt động",
@@ -12,6 +13,9 @@ const STATUS_LABEL = {
 };
 
 export default function DataManagement() {
+  const { user } = useAuth();
+  const readOnly = user?.role !== "admin";
+
   return (
     <div className="p-6 lg:p-8 space-y-6" data-testid="data-management-page">
       <Toaster position="top-right" richColors />
@@ -19,19 +23,27 @@ export default function DataManagement() {
         <h1 className="font-display font-bold text-3xl text-slate-900">Quản lý Dữ liệu Nền</h1>
         <p className="text-sm text-slate-500 mt-1">Quản lý HTX và Máy móc thiết bị (FN-02, FN-03)</p>
       </div>
+
+      {readOnly && (
+        <div className="flex items-center gap-2 text-sm bg-[#00A3E0]/10 border border-[#00A3E0]/30 text-[#0089BE] px-4 py-2.5 rounded-md" data-testid="readonly-banner">
+          <Eye className="w-4 h-4 shrink-0" />
+          <span>Chế độ chỉ xem — tài khoản Cán bộ Cục không có quyền thêm/sửa/xóa dữ liệu.</span>
+        </div>
+      )}
+
       <Tabs defaultValue="htx">
         <TabsList>
           <TabsTrigger value="htx" data-testid="tab-htx"><Building2 className="w-4 h-4 mr-1.5" /> HTX & Chủ sở hữu</TabsTrigger>
           <TabsTrigger value="machines" data-testid="tab-machines"><Wrench className="w-4 h-4 mr-1.5" /> Máy móc & Thiết bị</TabsTrigger>
         </TabsList>
-        <TabsContent value="htx"><HTXTab /></TabsContent>
-        <TabsContent value="machines"><MachinesTab /></TabsContent>
+        <TabsContent value="htx"><HTXTab readOnly={readOnly} /></TabsContent>
+        <TabsContent value="machines"><MachinesTab readOnly={readOnly} /></TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function HTXTab() {
+function HTXTab({ readOnly }) {
   const [items, setItems] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [q, setQ] = useState("");
@@ -87,20 +99,24 @@ function HTXTab() {
           <option value="ALL">Tất cả tỉnh</option>
           {provinces.map((p) => <option key={p.code} value={p.code}>{p.name}</option>)}
         </select>
-        <button
-          data-testid="htx-add"
-          onClick={() => setForm({ __isNew: true, code: "", name: "", owner_name: "", province_code: "CT", district: "", commune: "", lat: 10, lng: 105, cultivated_area_ha: 500, phone: "", owner_type: "HTX" })}
-          className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white text-sm font-medium"
-        >
-          <PlusCircle className="w-4 h-4" /> Thêm HTX
-        </button>
-        <button
-          data-testid="htx-upload"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
-          onClick={() => setImporter(true)}
-        >
-          <UploadCloud className="w-4 h-4" /> Tải Excel
-        </button>
+        {!readOnly && (
+          <>
+            <button
+              data-testid="htx-add"
+              onClick={() => setForm({ __isNew: true, code: "", name: "", owner_name: "", province_code: "CT", district: "", commune: "", lat: 10, lng: 105, cultivated_area_ha: 500, phone: "", owner_type: "HTX" })}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white text-sm font-medium"
+            >
+              <PlusCircle className="w-4 h-4" /> Thêm HTX
+            </button>
+            <button
+              data-testid="htx-upload"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
+              onClick={() => setImporter(true)}
+            >
+              <UploadCloud className="w-4 h-4" /> Tải Excel
+            </button>
+          </>
+        )}
       </div>
 
       {importer && (
@@ -127,7 +143,7 @@ function HTXTab() {
               <th className="text-left px-4 py-2.5">Tỉnh</th>
               <th className="text-right px-4 py-2.5">Diện tích (ha)</th>
               <th className="text-center px-4 py-2.5">Trạng thái</th>
-              <th className="text-right px-4 py-2.5">Thao tác</th>
+              {!readOnly && <th className="text-right px-4 py-2.5">Thao tác</th>}
             </tr>
           </thead>
           <tbody>
@@ -143,14 +159,16 @@ function HTXTab() {
                     {h.active ? "Hoạt động" : "Tắt"}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => setForm({ ...h })} className="text-[#00A3E0] hover:text-[#0089BE] mr-3" data-testid={`htx-edit-${h.code}`}>
-                    <PencilLine className="w-4 h-4 inline" />
-                  </button>
-                  <button onClick={() => remove(h.code)} className="text-[#E74C3C]" data-testid={`htx-delete-${h.code}`}>
-                    <Trash2 className="w-4 h-4 inline" />
-                  </button>
-                </td>
+                {!readOnly && (
+                  <td className="px-4 py-2.5 text-right">
+                    <button onClick={() => setForm({ ...h })} className="text-[#00A3E0] hover:text-[#0089BE] mr-3" data-testid={`htx-edit-${h.code}`}>
+                      <PencilLine className="w-4 h-4 inline" />
+                    </button>
+                    <button onClick={() => remove(h.code)} className="text-[#E74C3C]" data-testid={`htx-delete-${h.code}`}>
+                      <Trash2 className="w-4 h-4 inline" />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -187,7 +205,7 @@ function HTXForm({ form, setForm, provinces, onSave, onCancel }) {
   );
 }
 
-function MachinesTab() {
+function MachinesTab({ readOnly }) {
   const [items, setItems] = useState([]);
   const [cats, setCats] = useState([]);
   const [htxs, setHtxs] = useState([]);
@@ -241,20 +259,24 @@ function MachinesTab() {
           <option value="ALL">Tất cả tình trạng</option>
           {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
-        <button
-          data-testid="machine-add"
-          onClick={() => setForm({ __isNew: true, htx_id: htxs[0]?.id || "", category_code: cats[0]?.code || "", serial_no: "", horsepower: 50, status: "hoat_dong", condition_notes: "" })}
-          className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white text-sm font-medium"
-        >
-          <PlusCircle className="w-4 h-4" /> Thêm máy
-        </button>
-        <button
-          data-testid="machine-upload"
-          onClick={() => setImporter(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
-        >
-          <UploadCloud className="w-4 h-4" /> Tải Excel máy
-        </button>
+        {!readOnly && (
+          <>
+            <button
+              data-testid="machine-add"
+              onClick={() => setForm({ __isNew: true, htx_id: htxs[0]?.id || "", category_code: cats[0]?.code || "", serial_no: "", horsepower: 50, status: "hoat_dong", condition_notes: "" })}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#00A82D] hover:bg-[#008E26] text-white text-sm font-medium"
+            >
+              <PlusCircle className="w-4 h-4" /> Thêm máy
+            </button>
+            <button
+              data-testid="machine-upload"
+              onClick={() => setImporter(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white border border-slate-300 text-slate-700 text-sm hover:bg-slate-50"
+            >
+              <UploadCloud className="w-4 h-4" /> Tải Excel máy
+            </button>
+          </>
+        )}
       </div>
 
       {importer && (
@@ -280,7 +302,7 @@ function MachinesTab() {
               <th className="text-left px-4 py-2.5">Chủng loại</th>
               <th className="text-right px-4 py-2.5">Công suất (HP)</th>
               <th className="text-center px-4 py-2.5">Trạng thái</th>
-              <th className="text-right px-4 py-2.5">Thao tác</th>
+              {!readOnly && <th className="text-right px-4 py-2.5">Thao tác</th>}
             </tr>
           </thead>
           <tbody>
@@ -295,14 +317,16 @@ function MachinesTab() {
                     {STATUS_LABEL[m.status]}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => setForm({ ...m })} className="text-[#00A3E0] mr-3" data-testid={`machine-edit-${m.id}`}>
-                    <PencilLine className="w-4 h-4 inline" />
-                  </button>
-                  <button onClick={() => remove(m.id)} className="text-[#E74C3C]" data-testid={`machine-delete-${m.id}`}>
-                    <Trash2 className="w-4 h-4 inline" />
-                  </button>
-                </td>
+                {!readOnly && (
+                  <td className="px-4 py-2.5 text-right">
+                    <button onClick={() => setForm({ ...m })} className="text-[#00A3E0] mr-3" data-testid={`machine-edit-${m.id}`}>
+                      <PencilLine className="w-4 h-4 inline" />
+                    </button>
+                    <button onClick={() => remove(m.id)} className="text-[#E74C3C]" data-testid={`machine-delete-${m.id}`}>
+                      <Trash2 className="w-4 h-4 inline" />
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

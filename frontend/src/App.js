@@ -22,7 +22,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/supply-demand" element={<SupplyDemand />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/data-management" element={<ProtectedRoute adminOnly><DataManagement /></ProtectedRoute>} />
+            <Route path="/data-management" element={<DataManagement />} />
             <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
           </Route>
           <Route path="*" element={<Navigate to="/map" replace />} />
