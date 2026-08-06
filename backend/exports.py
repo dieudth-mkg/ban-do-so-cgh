@@ -8,7 +8,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import (
-    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer,
+    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak,
 )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -59,6 +59,32 @@ def build_excel(title: str, headers: list, rows: list) -> bytes:
     return bio.getvalue()
 
 
+def build_excel_by_region(title: str, headers: list, regions: list) -> bytes:
+    """Create one Excel worksheet for each province in a regional report."""
+    wb = Workbook()
+    wb.remove(wb.active)
+    for region in regions:
+        ws = wb.create_sheet(title=(region["province"] or "BaoCao")[:31])
+        ws.append([f"{title} — {region['province']}"])
+        ws["A1"].font = Font(bold=True, size=14, color="00A82D")
+        ws.append([region["summary"]])
+        ws["A2"].font = Font(italic=True, color="475569")
+        ws.append([])
+        ws.append(headers)
+        for cell in ws[4]:
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor="00A3E0")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+        for row in region["rows"]:
+            ws.append(row)
+        for col in ws.columns:
+            max_len = max((len(str(cell.value)) if cell.value is not None else 0) for cell in col)
+            ws.column_dimensions[col[0].column_letter].width = min(40, max(12, max_len + 2))
+    bio = BytesIO()
+    wb.save(bio)
+    return bio.getvalue()
+
+
 def build_pdf(title: str, headers: list, rows: list) -> bytes:
     _register_fonts()
     bio = BytesIO()
@@ -101,5 +127,53 @@ def build_pdf(title: str, headers: list, rows: list) -> bytes:
         ("RIGHTPADDING", (0, 0), (-1, -1), 6),
     ]))
     story.append(table)
+    doc.build(story)
+    return bio.getvalue()
+
+
+def build_pdf_by_region(title: str, headers: list, regions: list) -> bytes:
+    """Create a regional report PDF with a new page for each province."""
+    _register_fonts()
+    bio = BytesIO()
+    doc = SimpleDocTemplate(
+        bio, pagesize=landscape(A4),
+        leftMargin=1.2 * cm, rightMargin=1.2 * cm,
+        topMargin=1.2 * cm, bottomMargin=1.2 * cm,
+    )
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "MKGRegionTitle", parent=styles["Title"], fontName="MKG-Bold", fontSize=15,
+        textColor=colors.HexColor("#00A82D"), alignment=0,
+    )
+    summary_style = ParagraphStyle(
+        "MKGRegionSummary", parent=styles["BodyText"], fontName="MKG", fontSize=9,
+        textColor=colors.HexColor("#475569"), alignment=0,
+    )
+    table_style = TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#00A3E0")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "MKG-Bold"),
+        ("FONTNAME", (0, 1), (-1, -1), "MKG"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#E2E8F0")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+    ])
+    story = []
+    for index, region in enumerate(regions):
+        story.extend([
+            Paragraph(f"{title} — {region['province']}", title_style),
+            Paragraph(region["summary"], summary_style),
+            Spacer(1, 0.35 * cm),
+        ])
+        data = [headers] + [[str(cell) if cell is not None else "" for cell in row] for row in region["rows"]]
+        table = Table(data, repeatRows=1)
+        table.setStyle(table_style)
+        story.append(table)
+        if index < len(regions) - 1:
+            story.append(PageBreak())
     doc.build(story)
     return bio.getvalue()

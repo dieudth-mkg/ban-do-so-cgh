@@ -39,11 +39,11 @@ SEASONS = [
 
 
 NORMS = [
-    {"category_code": "MC01", "ha_per_machine_per_season": 60.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
-    {"category_code": "MC02", "ha_per_machine_per_season": 80.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
-    {"category_code": "MC03", "ha_per_machine_per_season": 100.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
-    {"category_code": "MC04", "ha_per_machine_per_season": 70.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
-    {"category_code": "MC05", "ha_per_machine_per_season": 120.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
+    {"category_code": "MC01", "stage_code": "LAM_DAT", "ha_per_machine_per_season": 60.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
+    {"category_code": "MC02", "stage_code": "GIEO_SA", "ha_per_machine_per_season": 80.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
+    {"category_code": "MC03", "stage_code": "CHAM_SOC", "ha_per_machine_per_season": 100.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
+    {"category_code": "MC04", "stage_code": "THU_HOACH", "ha_per_machine_per_season": 70.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
+    {"category_code": "MC05", "stage_code": "SAU_THU_HOACH", "ha_per_machine_per_season": 120.0, "document_ref": "QĐ 2311/QĐ-BNN-KTHTPT"},
 ]
 
 
@@ -110,7 +110,11 @@ async def seed_all(db):
 
     # Provinces
     for p in PROVINCES:
-        await db["provinces"].update_one({"code": p["code"]}, {"$setOnInsert": {**p, "active": True}}, upsert=True)
+        await db["provinces"].update_one(
+            {"code": p["code"]},
+            {"$setOnInsert": {**p, "active": True, "effective_from": "2025-01-01T00:00:00+00:00"}},
+            upsert=True,
+        )
 
     # Machine categories
     for c in MACHINE_CATEGORIES:
@@ -128,14 +132,32 @@ async def seed_all(db):
     for n in NORMS:
         await db["productivity_norms"].update_one(
             {"category_code": n["category_code"]},
-            {"$setOnInsert": {**n, "effective_from": "2025-01-01T00:00:00+00:00"}},
+            {"$setOnInsert": {
+                **n, "active": True,
+                "effective_from": "2025-01-01T00:00:00+00:00", "effective_to": None,
+            }},
             upsert=True,
         )
 
-    # Alert thresholds
+    # Alert thresholds — mốc đề xuất theo BRD FN-01: Đủ ≥85% / Cần chú ý 60–<85% / Thiếu <60% / Thừa ≥120%
     await db["alert_thresholds"].update_one(
         {"key": "default"},
-        {"$setOnInsert": {"key": "default", "sufficient_min": 0.95, "slight_min": 0.70}},
+        {"$setOnInsert": {
+            "key": "default", "sufficient_min": 0.85, "slight_min": 0.60, "excess_min": 1.20,
+            "effective_from": "2025-01-01T00:00:00+00:00",
+        }},
+        upsert=True,
+    )
+
+    # System parameters (FN-01 nhóm 6)
+    await db["system_params"].update_one(
+        {"key": "default"},
+        {"$setOnInsert": {
+            "key": "default", "basemap_source": "OpenStreetMap",
+            "import_allowed_extensions": ".xlsx,.xls",
+            "import_max_rows": 5000, "import_max_file_size_mb": 10,
+            "data_freshness_threshold_hours": 24,
+        }},
         upsert=True,
     )
 
@@ -167,51 +189,94 @@ async def seed_all(db):
             {"$set": {"commune": commune}},
         )
 
-    # Machines - versioned re-seed. v3 introduces mixed distribution so the
-    # map demo shows a natural mix of green/amber/red status per province.
+    # Machines - versioned re-seed. v4 aligns with BRD FN-04:
+    # Mã máy tự sinh, Số máy/SN + Số khung, Hãng/Model/Năm SX/Nhiên liệu/Năng suất,
+    # Ngày HTX sở hữu, nhãn nguồn tình trạng, soft-delete, + Lịch sử biến động.
     machines_col = db["machines"]
     settings_col = db["system_settings"]
     seed_ver_doc = await settings_col.find_one({"key": "seed_version"})
     current_ver = (seed_ver_doc or {}).get("value", "")
-    if current_ver != "v3":
+    if current_ver != "v5":
         await machines_col.delete_many({})
+        await db["machine_history"].delete_many({})
+        await db["owners"].delete_many({})
+        await db["counters"].delete_one({"_id": "machine_code"})
+        await db["counters"].delete_one({"_id": "owner_code"})
         random.seed(1337)
-        machines = []
-        # Per province group (4 consecutive HTX): idx 0 → surplus/green,
-        # idx 1 → sufficient/green, idx 2 → slight shortage/amber, idx 3 → severe/red
+
+        BRANDS = ["Kubota", "Yanmar", "John Deere", "Iseki", "Đông Phong"]
+        FUELS = ["Diesel", "Xăng", "Điện"]
+        OWNED_DATES = ["2024-03-01", "2024-06-15", "2024-09-01", "2025-01-15", "2025-03-01"]
+
         target_factors = [1.30, 1.10, 0.82, 0.55]
+        machines, history, owners = [], [], []
+        seq = owner_seq = 0
         for htx_idx, (code, name, owner, prov, lat, lng, area, commune) in enumerate(HTX_SAMPLES):
-            group_idx = htx_idx % 4
-            base_factor = target_factors[group_idx]
+            base_factor = target_factors[htx_idx % 4]
+            # FN-03: mỗi HTX có một chủ sở hữu loại HTX (Mã CSH tự sinh)
+            owner_seq += 1
+            owner_id = f"OWN-{code}"
+            owners.append({
+                "id": owner_id, "code": f"CSH-{owner_seq:05d}", "name": owner,
+                "owner_type": "HTX", "phone": f"09{random.randint(10000000, 99999999)}",
+                "htx_id": code, "active": True, "created_at": "2024-01-01T00:00:00+00:00",
+            })
             for cat in MACHINE_CATEGORIES:
                 norm = next(n["ha_per_machine_per_season"] for n in NORMS if n["category_code"] == cat["code"])
                 needed = area / norm
-                # Small per-category jitter so not every category is identical
                 factor = base_factor * random.uniform(0.92, 1.08)
                 count = max(0, int(round(needed * factor)))
                 for i in range(count):
+                    seq += 1
+                    mid = f"{code}-{cat['code']}-{i+1:03d}"
+                    mcode = f"MAY-{seq:05d}"
+                    status = random.choices(["hoat_dong", "bao_tri", "hong"], weights=[85, 10, 5], k=1)[0]
+                    owned = random.choice(OWNED_DATES)
+                    created = f"{owned}T00:00:00+00:00"
                     machines.append({
-                        "id": f"{code}-{cat['code']}-{i+1:03d}",
-                        "htx_id": code,
-                        "owner_name": owner,
+                        "id": mid, "code": mcode, "htx_id": code,
+                        "owner_id": owner_id, "owner_name": owner,
                         "category_code": cat["code"],
-                        "serial_no": f"{code}-{cat['code']}-SN{random.randint(10000, 99999)}",
+                        "brand": random.choice(BRANDS),
+                        "model": f"M{random.randint(100, 999)}",
+                        "year_made": random.randint(2015, 2024),
+                        "fuel": random.choice(FUELS),
                         "horsepower": round(random.uniform(30, 150), 1),
-                        "status": random.choices(
-                            ["hoat_dong", "bao_tri", "hong"],
-                            weights=[85, 10, 5], k=1
-                        )[0],
+                        "productivity": round(norm * random.uniform(0.9, 1.1), 1),
+                        "serial_no": f"SN{random.randint(1000000, 9999999)}",
+                        "chassis_no": f"KHUNG-{code}-{seq:05d}",
+                        "status": status,
+                        "status_source": "manual",           # nhập tay ban đầu (BR-04)
+                        "status_updated_at": created,
                         "condition_notes": "",
-                        "created_at": "2025-01-01T00:00:00+00:00",
+                        "owned_since": owned,                 # BR-08
+                        "active": True, "deactivated_at": None,
+                        "created_at": created,
+                    })
+                    history.append({
+                        "id": f"h-{mid}", "machine_id": mid, "machine_code": mcode,
+                        "change_type": "create", "source": "manual", "actor": "seed",
+                        "field": "", "before": None, "after": status,
+                        "owned_since": owned, "deactivated_at": None, "ts": created,
                     })
         if machines:
             await machines_col.insert_many(machines)
+            await db["machine_history"].insert_many(history)
+        if owners:
+            await db["owners"].insert_many(owners)
+        # Đặt bộ đếm để bản ghi tạo sau tiếp tục đúng thứ tự
+        await db["counters"].update_one(
+            {"_id": "machine_code"}, {"$set": {"seq": seq}}, upsert=True,
+        )
+        await db["counters"].update_one(
+            {"_id": "owner_code"}, {"$set": {"seq": owner_seq}}, upsert=True,
+        )
         await settings_col.update_one(
             {"key": "seed_version"},
-            {"$set": {"key": "seed_version", "value": "v3"}},
+            {"$set": {"key": "seed_version", "value": "v5"}},
             upsert=True,
         )
-        logs.append(f"machines_v3:{len(machines)}")
+        logs.append(f"machines_v5:{len(machines)}, owners:{len(owners)}")
 
     # Sync logs (mock)
     sync_col = db["sync_logs"]
