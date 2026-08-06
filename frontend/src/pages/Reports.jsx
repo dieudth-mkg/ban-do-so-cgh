@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { api, API } from "../lib/api";
 import {
   FileSpreadsheet, FileText, BarChart3, Layers, AlertTriangle, Download,
-  Filter, Calendar, MapPin, Tractor, Eye, X, Loader2,
+  Filter, Calendar, MapPin, Tractor, Eye, X, Loader2, ChevronRight, ArrowLeft,
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
@@ -11,7 +11,7 @@ const REPORTS = [
     kind: "summary_by_region",
     icon: Layers, color: "#00A3E0",
     title: "Báo cáo Tổng hợp theo Khu vực",
-    desc: "Số HTX, số máy và diện tích cơ giới hóa theo từng tỉnh.",
+    desc: "Tổng hợp theo tỉnh, kèm chi tiết từng HTX, chủng loại máy và số lượng.",
     uses: ["province", "category"],
   },
   {
@@ -29,6 +29,74 @@ const REPORTS = [
     uses: ["season", "province", "category"],
   },
 ];
+
+function RegionSummaryView({ data }) {
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  if (!data) return null;
+
+  const provinces = data.rows.filter((row) => row[0] === "Tổng hợp tỉnh");
+  const details = data.rows.filter((row) => row[0] === "Chi tiết HTX");
+  const province = provinces.find((row) => row[1] === selectedProvince);
+
+  if (!province) {
+    return (
+      <div className="p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {provinces.map((row) => (
+          <button
+            key={row[1]}
+            type="button"
+            onClick={() => setSelectedProvince(row[1])}
+            className="text-left rounded-xl border border-slate-200 bg-white p-5 hover:border-[#00A3E0] hover:shadow-md transition-all"
+            data-testid={`region-report-${row[1]}`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-display font-bold text-lg text-slate-800 flex-1">{row[1]}</span>
+              <ChevronRight className="w-5 h-5 text-[#00A3E0]" />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div><div className="text-xs text-slate-500">HTX</div><strong>{Number(row[4]).toLocaleString("vi-VN")}</strong></div>
+              <div><div className="text-xs text-slate-500">Tổng máy</div><strong>{Number(row[5]).toLocaleString("vi-VN")}</strong></div>
+              <div><div className="text-xs text-slate-500">Máy hoạt động</div><strong>{Number(row[6]).toLocaleString("vi-VN")}</strong></div>
+              <div><div className="text-xs text-slate-500">Diện tích</div><strong>{Number(row[7]).toLocaleString("vi-VN")} ha</strong></div>
+            </div>
+            <div className="mt-4 text-xs font-medium text-[#00A3E0]">Xem chi tiết HTX và máy móc</div>
+          </button>
+        ))}
+        {!provinces.length && <div className="col-span-full text-center py-8 text-slate-500">Không có dữ liệu phù hợp bộ lọc.</div>}
+      </div>
+    );
+  }
+
+  const provinceDetails = details.filter((row) => row[1] === selectedProvince);
+  return (
+    <div className="p-5">
+      <button type="button" onClick={() => setSelectedProvince(null)} className="flex items-center gap-1.5 text-sm text-[#00A3E0] font-medium mb-4">
+        <ArrowLeft className="w-4 h-4" /> Danh sách tỉnh
+      </button>
+      <div className="mb-4 flex flex-wrap items-end gap-x-7 gap-y-2">
+        <h3 className="font-display font-bold text-xl text-slate-800 mr-auto">{selectedProvince}</h3>
+        <span className="text-sm text-slate-600"><strong>{Number(province[4]).toLocaleString("vi-VN")}</strong> HTX</span>
+        <span className="text-sm text-slate-600"><strong>{Number(province[5]).toLocaleString("vi-VN")}</strong> máy</span>
+        <span className="text-sm text-slate-600"><strong>{Number(province[6]).toLocaleString("vi-VN")}</strong> hoạt động</span>
+      </div>
+      <div className="overflow-x-auto border border-slate-200 rounded-lg">
+        <table className="w-full min-w-[760px] text-sm">
+          <thead className="bg-slate-100 text-slate-500 text-xs uppercase">
+            <tr>{["Mã HTX", "Tên HTX", "Tổng máy HTX", "Máy hoạt động", "Chủng loại máy", "Hãng / Model", "Số lượng"].map((header) => <th key={header} className="text-left px-4 py-2.5">{header}</th>)}</tr>
+          </thead>
+          <tbody>
+            {provinceDetails.map((row, index) => (
+              <tr key={`${row[2]}-${row[8]}-${row[9]}-${index}`} className="border-t border-slate-100">
+                {[row[2], row[3], row[5], row[6], row[8], row[9], row[10]].map((cell, cellIndex) => <td key={cellIndex} className="px-4 py-2.5 whitespace-nowrap">{typeof cell === "number" ? cell.toLocaleString("vi-VN") : String(cell ?? "")}</td>)}
+              </tr>
+            ))}
+            {!provinceDetails.length && <tr><td colSpan={7} className="text-center py-8 text-slate-500">Chưa có máy thuộc các HTX của tỉnh này.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function Reports() {
   const [provinces, setProvinces] = useState([]);
@@ -250,6 +318,12 @@ export default function Reports() {
           </div>
           {loadingPreview && <Loader2 className="w-4 h-4 animate-spin text-slate-400 ml-auto" />}
         </div>
+        {previewKind === "summary_by_region" ? (
+          <div className="max-h-[520px] overflow-y-auto">
+            <RegionSummaryView data={preview} />
+          </div>
+        ) : (
+          <>
         <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
           <table className="w-full text-sm">
             <thead className="text-slate-500 text-xs uppercase bg-slate-50 sticky top-0">
@@ -281,6 +355,8 @@ export default function Reports() {
           <div className="px-4 py-2 text-xs text-slate-500 border-t border-slate-100 bg-slate-50">
             Hiển thị 200/{preview.total_rows} dòng · Xuất file để xem toàn bộ.
           </div>
+        )}
+          </>
         )}
       </div>
 
@@ -317,6 +393,8 @@ export default function Reports() {
                 <div className="flex items-center justify-center py-20 text-slate-500">
                   <Loader2 className="w-5 h-5 animate-spin mr-2" /> Đang tính toán báo cáo…
                 </div>
+              ) : modal.kind === "summary_by_region" ? (
+                <RegionSummaryView data={modal.data} />
               ) : (
                 <table className="w-full text-sm border border-slate-200 rounded-md overflow-hidden">
                   <thead className="bg-slate-100 text-slate-600 text-xs uppercase sticky top-0">

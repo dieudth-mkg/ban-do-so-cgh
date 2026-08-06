@@ -6,12 +6,12 @@ import "leaflet.markercluster";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   Tractor, Sprout, Filter, MapPin, Calendar, Activity, Phone, Layers,
-  Flame, Waypoints, X,
+  Flame, Waypoints, X, Search, Clock,
 } from "lucide-react";
 import { api } from "../lib/api";
 
 const STATUS_COLORS = {
-  green: "#00A82D", amber: "#F5A623", red: "#E74C3C", gray: "#95A5A6",
+  green: "#00A82D", amber: "#F5A623", red: "#E74C3C", gray: "#95A5A6", blue: "#00A3E0",
 };
 
 const PROVINCE_COLORS = {
@@ -104,7 +104,7 @@ function ClusterLayer({ htxList, onPopupDetail }) {
 }
 
 export default function MapPage() {
-  const [filters, setFilters] = useState({ season: "DX", province: "ALL", category: "ALL", status: "ALL" });
+  const [filters, setFilters] = useState({ season: "DX", province: "ALL", category: "ALL", status: "ALL", q: "" });
   const [layers, setLayers] = useState({ boundaries: true, heatmap: false, cluster: false });
   const [htxList, setHtxList] = useState([]);
   const [provinces, setProvinces] = useState([]);
@@ -132,10 +132,11 @@ export default function MapPage() {
     if (filters.province !== "ALL") params.province = filters.province;
     if (filters.category !== "ALL") params.category = filters.category;
     if (filters.status !== "ALL") params.status = filters.status;
-    api.get("/map/htx-summary", { params }).then((r) => {
-      setHtxList(r.data);
-      setLoading(false);
-    });
+    if (filters.q.trim()) params.q = filters.q.trim();
+    api.get("/map/htx-summary", { params })
+      .then((r) => setHtxList(r.data))
+      .catch(() => setHtxList([]))
+      .finally(() => setLoading(false));
   }, [filters]);
 
   const summary = useMemo(() => {
@@ -145,7 +146,9 @@ export default function MapPage() {
   }, [htxList]);
 
   const openDetail = async (htxId) => {
-    const { data } = await api.get(`/map/htx/${htxId}/detail`);
+    const { data } = await api.get(`/map/htx/${htxId}/detail`, {
+      params: { season: filters.season, category: filters.category, status: filters.status },
+    });
     setSelectedDetail(data);
   };
 
@@ -257,12 +260,26 @@ export default function MapPage() {
         ))}
       </MapContainer>
 
+      <div className="absolute top-6 right-6 mkg-glass rounded-lg px-3 py-2 z-[1000] text-xs text-slate-600 flex items-center gap-2" data-testid="map-system-date">
+        <Calendar className="w-3.5 h-3.5 text-[#00A3E0]" /> Ngày hệ thống: {new Date().toLocaleDateString("vi-VN")}
+      </div>
+
       {/* Filter Panel */}
       <div className="absolute top-6 left-6 w-[300px] mkg-glass rounded-xl p-5 z-[1000]" data-testid="map-filter-panel">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="w-4 h-4 text-[#00A3E0]" />
           <h3 className="font-display font-bold text-sm uppercase tracking-wide">Bộ lọc bản đồ</h3>
         </div>
+
+        <label className="block mb-3">
+          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1">
+            <Search className="w-3 h-3" /> Tra cứu HTX / máy / chủ sở hữu
+          </div>
+          <input data-testid="map-search" value={filters.q}
+            onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+            placeholder="Tên, mã, SN, số khung..."
+            className="w-full text-sm bg-white border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00C4B4]" />
+        </label>
 
         <div className="mb-3">
           <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-500 mb-1.5">
@@ -300,7 +317,7 @@ export default function MapPage() {
           options={[["ALL", "Tất cả chủng loại"], ...cats.map((c) => [c.code, c.name])]} />
         <FilterSelect icon={Activity} label="Tình trạng" testid="filter-status"
           value={filters.status} onChange={(v) => setFilters({ ...filters, status: v })}
-          options={[["ALL", "Tất cả"], ["hoat_dong", "Hoạt động"], ["bao_tri", "Bảo trì"], ["hong", "Hỏng"]]} />
+          options={[["ALL", "Tất cả"], ["hoat_dong", "Hoạt động"], ["bao_tri", "Bảo trì"], ["hong", "Hỏng"], ["chua_co_du_lieu", "Chưa có dữ liệu"]]} />
 
         <div className="mt-4 pt-3 border-t border-slate-200/60">
           <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Lớp bản đồ</div>
@@ -320,6 +337,7 @@ export default function MapPage() {
           {!layers.heatmap ? (
             <div className="grid grid-cols-2 gap-1.5 text-[11px]">
               <LegendItem color={STATUS_COLORS.green} label={`Đủ (${summary.green})`} />
+              <LegendItem color={STATUS_COLORS.blue} label={`Thừa (${summary.blue || 0})`} />
               <LegendItem color={STATUS_COLORS.amber} label={`Thiếu nhẹ (${summary.amber})`} />
               <LegendItem color={STATUS_COLORS.red} label={`Thiếu (${summary.red})`} />
               <LegendItem color={STATUS_COLORS.gray} label={`Chưa có (${summary.gray})`} />
@@ -341,7 +359,7 @@ export default function MapPage() {
       </div>
 
       {/* Bottom panel: switches between HTX list & Xã list */}
-      {!layers.heatmap && filters.province === "ALL" && (
+      {filters.province === "ALL" && (
         <div className="absolute bottom-6 right-6 w-[380px] max-h-[45vh] mkg-glass rounded-xl overflow-hidden z-[1000]" data-testid="map-status-table">
           <div className="px-4 py-3 border-b border-white/40 flex items-center gap-2">
             <Layers className="w-4 h-4 text-[#00A82D]" />
@@ -359,7 +377,7 @@ export default function MapPage() {
               </thead>
               <tbody>
                 {htxList.slice(0, 60).map((h) => (
-                  <tr key={h.id} className="border-b border-white/30 hover:bg-white/40" data-testid={`row-${h.code}`}>
+                  <tr key={h.id} onClick={() => openDetail(h.id)} className="border-b border-white/30 hover:bg-white/40 cursor-pointer" data-testid={`row-${h.code}`}>
                     <td className="px-3 py-2">
                       <div className="font-medium truncate max-w-[140px]">{h.name}</div>
                       <div className="text-[10px] text-slate-500">{h.code}</div>
@@ -380,7 +398,7 @@ export default function MapPage() {
       )}
 
       {/* Commune drilldown list */}
-      {!layers.heatmap && byCommune && (
+      {byCommune && (
         <div className="absolute bottom-6 right-6 w-[380px] max-h-[55vh] mkg-glass rounded-xl overflow-hidden z-[1000]" data-testid="commune-panel">
           <div className="px-4 py-3 border-b border-white/40 flex items-center gap-2">
             <Layers className="w-4 h-4 text-[#00A3E0]" />
@@ -429,6 +447,9 @@ export default function MapPage() {
                 <Stat label="Diện tích" value={`${selectedDetail.htx.cultivated_area_ha.toLocaleString("vi-VN")} ha`} />
                 <Stat label="Tổng máy" value={selectedDetail.machines.length} />
               </div>
+              <div className="mb-4 rounded-md bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600 flex gap-2">
+                <Clock className="w-4 h-4 shrink-0 text-[#00A3E0]" /> {selectedDetail.area_note}
+              </div>
               <div className="font-display font-bold text-sm uppercase tracking-wide mb-2">Cơ cấu máy theo Chủng loại</div>
               <table className="w-full text-sm border border-slate-200 rounded-md overflow-hidden">
                 <thead className="bg-slate-100 text-slate-600 text-xs uppercase">
@@ -454,6 +475,23 @@ export default function MapPage() {
                   ))}
                 </tbody>
               </table>
+              <div className="font-display font-bold text-sm uppercase tracking-wide mt-5 mb-2">Danh sách máy & nguồn tình trạng</div>
+              <div className="overflow-x-auto border border-slate-200 rounded-md">
+                <table className="w-full text-xs">
+                  <thead className="bg-slate-100 text-slate-600 uppercase">
+                    <tr><th className="text-left px-3 py-2">Máy</th><th className="text-left px-3 py-2">Trạng thái</th><th className="text-left px-3 py-2">Nguồn / cập nhật</th></tr>
+                  </thead>
+                  <tbody>
+                    {selectedDetail.machines.length === 0 ? <tr><td colSpan="3" className="px-3 py-3 text-slate-500">Không có máy phù hợp bộ lọc.</td></tr> : selectedDetail.machines.map((m) => (
+                      <tr key={m.id} className="border-t border-slate-200">
+                        <td className="px-3 py-2"><div className="font-medium">{m.code || m.serial_no || "Máy chưa có mã"}</div><div className="text-slate-500">{m.brand} {m.model}</div></td>
+                        <td className="px-3 py-2">{m.status_label}</td>
+                        <td className="px-3 py-2"><div>{m.status_source_label}</div><div className="text-slate-500">{m.status_updated_at ? new Date(m.status_updated_at).toLocaleString("vi-VN") : "—"}</div></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <button data-testid="close-detail-btn" onClick={() => setSelectedDetail(null)}
                 className="mt-4 px-4 py-2 rounded-md bg-slate-900 text-white text-sm">
                 Đóng

@@ -7,8 +7,12 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  UserCog,
   RefreshCw,
+  Building2,
+  Users,
+  Wrench,
+  Layers,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "../lib/auth";
 
@@ -37,20 +41,51 @@ const items = [
 // Xem được bởi cả Quản trị viên và Cán bộ Cục (staff chỉ xem, không sửa/xóa)
 const dataItems = [
   {
-    to: "/data-management",
-    label: "Quản lý HTX và Máy móc",
-    icon: UserCog,
-    testid: "nav-data-management",
+    to: "/htx-management",
+    label: "Quản lý HTX",
+    icon: Building2,
+    testid: "nav-htx-management",
+  },
+  {
+    to: "/owner-management",
+    label: "Quản lý chủ sở hữu",
+    icon: Users,
+    testid: "nav-owner-management",
+  },
+  {
+    to: "/machine-management",
+    label: "Quản lý máy móc",
+    icon: Wrench,
+    testid: "nav-machine-management",
   },
 ];
 
-// Chỉ Quản trị viên mới thấy mục Quản trị & Cấu hình hệ thống
+// Chỉ Quản trị viên mới thấy các mục Quản trị hệ thống.
+// FN-01 và FN-12 là 2 màn hình riêng biệt, không dùng chung với nhau.
 const adminItems = [
   {
-    to: "/admin",
-    label: "Quản trị & Cấu hình",
+    to: "/category-config",
+    label: "Danh mục & Cấu hình",
+    icon: Layers,
+    testid: "nav-category-config",
+  },
+  {
+    to: "/account-management",
+    label: "Tài khoản & Phân quyền",
     icon: Settings,
-    testid: "nav-admin",
+    testid: "nav-account-management",
+  },
+  {
+    to: "/app-integration",
+    label: "Tích hợp App HTX",
+    icon: RefreshCw,
+    testid: "nav-app-integration",
+  },
+  {
+    to: "/monitoring",
+    label: "Giám sát & Vận hành",
+    icon: Activity,
+    testid: "nav-monitoring",
   },
 ];
 
